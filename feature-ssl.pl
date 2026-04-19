@@ -2403,6 +2403,62 @@ else {
 	}
 }
 
+# dovecot_local_name_cmp(name1, name2)
+# Order Dovecot local_name filters from less specific to more specific;
+# Dovecot uses the last matching filter, so wildcard and child host blocks
+# that overlap must be placed before the exact hostname they can match
+sub dovecot_local_name_cmp
+{
+my ($a, $b) = @_;
+my $ac = scalar(split(/\./, $a));
+my $bc = scalar(split(/\./, $b));
+my $rv = $ac <=> $bc;
+return $rv if ($rv);
+my $aw = $a =~ /^\*\./ ? 1 : 0;
+my $bw = $b =~ /^\*\./ ? 1 : 0;
+$rv = $bw <=> $aw;
+return $rv if ($rv);
+return lc($a) cmp lc($b);
+}
+
+# dovecot_local_name_block_cmp(&block1, &block2)
+# Sort local_name blocks by their on-disk position
+sub dovecot_local_name_block_cmp
+{
+my ($a, $b) = @_;
+my $rv = $a->{'file'} cmp $b->{'file'};
+return $rv if ($rv);
+return $a->{'line'} <=> $b->{'line'};
+}
+
+# dovecot_local_name_needs_move(name, &block, \@blocks)
+# Returns 1 if a block is out of order relative to other local_name blocks
+sub dovecot_local_name_needs_move
+{
+my ($name, $block, $blocks) = @_;
+my @blocks = sort { &dovecot_local_name_block_cmp($a, $b) } @$blocks;
+my $idx = &indexof($block, @blocks);
+return 0 if ($idx < 0);
+for (my $i = 0; $i < @blocks; $i++) {
+	$i == $idx && next;
+	my $cmp = &dovecot_local_name_cmp($name, $blocks[$i]->{'value'});
+	return 1 if ($i < $idx && $cmp < 0);
+	return 1 if ($i > $idx && $cmp > 0);
+	}
+return 0;
+}
+
+# remove_dovecot_local_name(&conf, &block)
+# Removes a local_name section and its members from the parsed config
+sub remove_dovecot_local_name
+{
+my ($conf, $block) = @_;
+&dovecot::delete_section($conf, $block);
+@$conf = grep { $_ ne $block } @$conf;
+@$conf = grep { $_->{'sectionname'} ne $block->{'name'} ||
+		$_->{'sectionvalue'} ne $block->{'value'} } @$conf;
+}
+
 # sync_dovecot_ssl_cert(&domain, [enable-or-disable])
 # If supported, configure Dovecot to use this domain's SSL cert for its IP
 sub sync_dovecot_ssl_cert
@@ -2438,7 +2494,6 @@ if (!$d->{'ssl_combined'} && !-r $d->{'ssl_combined'}) {
 	&sync_combined_ssl_cert($d);
 	}
 
-my $chain = &get_website_ssl_file($d, "ca");
 my $nochange = 0;
 
 my @ips;
@@ -2549,12 +2604,11 @@ if (!$d->{'virt'}) {
 	# Domain has no IP, but Dovecot supports SNI in version 2
 	my @loc = grep { $_->{'name'} eq 'local_name' &&
 			 $_->{'section'} } @$conf;
-	my @sslnames = &get_hostnames_from_cert($d);
-	my %sslnames = map { $_, 1 } @sslnames;
 	my @doms = ( $d, &get_domain_by("alias", $d->{'id'}) );
 	my @myloc = grep { &hostname_under_domain(\@doms, $_->{'value'}) } @loc;
-	my @dnames = map { ($_->{'dom'}, "*.".$_->{'dom'}) }
-			 grep { !$_->{'deleting'} } @doms;
+	my @dnames = sort { &dovecot_local_name_cmp($a, $b) }
+	               map { ($_->{'dom'}, "*.".$_->{'dom'}) }
+	                  grep { !$_->{'deleting'} } @doms;
 	my @delloc;
 	if (!$enable) {
 		# All existing local_name blocks are being removed
@@ -2562,35 +2616,44 @@ if (!$d->{'virt'}) {
 		}
 	else {
 		# May need to add or update
-		my $pdname = $d->{'dom'};
-		$pdname =~ s/^[^\.]+\.//;
 		foreach my $n (@dnames) {
 			my ($l) = grep { $_->{'value'} eq $n } @loc;
+			my $isnew = !$l;
 			if ($l) {
 				# Already exists, so update paths
 				&dovecot::save_directive($l->{'members'}, $cname, $cvalue);
 				&dovecot::save_directive($l->{'members'}, $kname, $kvalue);
-				&flush_file_lines($l->{'file'}, undef, 1);
 				}
 			else {
 				# Need to add
-				my $l = { 'name' => 'local_name',
-					  'value' => $n,
-					  'enabled' => 1,
-					  'section' => 1,
-					  'members' => [
-						{ 'name' => $cname,
-						  'value' => $cvalue, },
-						{ 'name' => $kname,
-						  'value' => $kvalue, },
-						],
-					  'file' => $cfile };
-				my ($plocal) = grep { $_->{'value'} eq $pdname } @loc;
-				&dovecot::create_section($conf, $l, undef,
-							 $plocal);
-				push(@$conf, $l);
-				&flush_file_lines($l->{'file'}, undef, 1);
+				$l = { 'name' => 'local_name',
+				       'value' => $n,
+				       'enabled' => 1,
+				       'section' => 1,
+				       'members' => [
+				           { 'name' => $cname,
+				             'value' => $cvalue, },
+				           { 'name' => $kname,
+				             'value' => $kvalue, } ],
+				       'file' => $cfile };
 				}
+			my @otherloc = grep { $_ ne $l }
+				       sort { &dovecot_local_name_block_cmp($a, $b) }
+				       @loc;
+			my ($before) = grep {
+				&dovecot_local_name_cmp($n, $_->{'value'}) < 0
+				} @otherloc;
+			if ($isnew || &dovecot_local_name_needs_move($n, $l, \@loc)) {
+				if (!$isnew) {
+					&remove_dovecot_local_name($conf, $l);
+					@loc = grep { $_ ne $l } @loc;
+					}
+				&dovecot::create_section($conf, $l, undef, $before);
+				push(@$conf, $l);
+				}
+			&flush_file_lines($l->{'file'}, undef, 1);
+			@loc = grep { $_->{'name'} eq 'local_name' &&
+				      $_->{'section'} } @$conf;
 			}
 		# Find old entries to remove
 		foreach my $l (@myloc) {
