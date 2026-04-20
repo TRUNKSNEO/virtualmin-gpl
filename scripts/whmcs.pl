@@ -515,8 +515,9 @@ return $db_conn_desc;
 sub script_whmcs_latest
 {
 local ($ver) = @_;
-local $vwant = $ver >= 8.7 ? "8\\.7" :
-	       $ver >= 8.6 ? "8\\.6" : undef;
+local $vwant = &compare_versions($ver, "8.13") >= 0 ? "8\\.13" :
+	       &compare_versions($ver, "8.12") >= 0 ? "8\\.12" :
+	       &compare_versions($ver, "8.11") >= 0 ? "8\\.11" : undef;
 if ($vwant) {
 	return ( "https://download.whmcs.com/assets/scripts/get-downloads.php",
 		 "\"version\":\"($vwant\\.[0-9\\.]+)\",(\"type\":\"(MAINTENANCE|SECURITY)\"|\"compatibleWith\")" );
