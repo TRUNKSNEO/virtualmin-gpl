@@ -2133,7 +2133,8 @@ if (!$d->{'provision_dns'} && !$d->{'dns_cloud'} && !$d->{'dns_submode'}) {
 	local $type = &bind8::find_value("type", $zone->{'members'});
 	return &text('validate_ednsnotype', "<tt>$d->{'dom'}</tt>") if (!$type);
 	return &text('validate_ednstype', "<tt>$d->{'dom'}</tt>",
-	     "<tt>$type</tt>", "<tt>master</tt>") if ($type ne "master");
+	     	     "<tt>$type</tt>", "<tt>master</tt>")
+		if ($type ne "master" && $type ne "primary");
 	}
 if ($d->{'dns_cloud'}) {
 	# Make sure the cloud provider knows about it
@@ -2684,7 +2685,7 @@ if (!$field || $field eq 'dom') {
 			return 0;
 			}
 		my $type = &bind8::find_value("type", $czone->{'members'});
-		if ($type eq "master") {
+		if ($type eq "master" || $type eq "primary") {
 			return 1;
 			}
 		return 0;
