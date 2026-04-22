@@ -7552,6 +7552,33 @@ $ssl_tests = [
 		    ],
 	},
 
+	# Install an EC cert and make sure 3 1 1 TLSA records hash the
+	# public key rather than an empty stream
+	{ 'command' => 'rm -f /tmp/functional-test-ec.key /tmp/functional-test-ec.cert' },
+	{ 'command' => 'openssl ecparam -genkey -name prime256v1 -out /tmp/functional-test-ec.key' },
+	{ 'command' => 'openssl req -new -x509 -key /tmp/functional-test-ec.key '.
+		       '-out /tmp/functional-test-ec.cert -days 1 '.
+		       '-subj "/CN='.$test_domain.'/O=Test SSL domain EC"' },
+	{ 'command' => 'install-cert.pl',
+	  'args' => [ [ 'domain', $test_domain ],
+		      [ 'key', '/tmp/functional-test-ec.key' ],
+		      [ 'cert', '/tmp/functional-test-ec.cert' ] ],
+	},
+	{ 'command' => 'modify-dns.pl',
+	  'args' => [ [ 'domain', $test_domain ],
+		      [ 'sync-tlsa' ],
+		      [ 'tlsa-pubkey' ] ],
+	},
+	{ 'command' => 'get-dns.pl',
+	  'args' => [ [ 'domain', $test_domain ],
+		      [ 'type', 'TLSA' ] ],
+	  'grep' => [ 'TLSA\\s+3 1 1 [0-9a-f]{64}' ],
+	  'antigrep' => [
+		'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'
+		],
+	},
+	{ 'command' => 'rm -f /tmp/functional-test-ec.key /tmp/functional-test-ec.cert' },
+
 	# Turn off TLSA
 	{ 'command' => 'modify-dns.pl',
           'args' => [ [ 'domain', $test_domain ],
