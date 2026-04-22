@@ -5110,7 +5110,7 @@ if ($selector) {
 	$hash = &backquote_command(
 	    "openssl x509 -in ".quotemeta($temp).
 	      " -pubkey -outform DER 2>/dev/null | ".
-	    "openssl pkey -in -outform DER 2> /dev/null | ".
+	    "openssl pkey -pubin -outform DER 2> /dev/null | ".
 	    "openssl sha256 2>/dev/null");
 	}
 else {
