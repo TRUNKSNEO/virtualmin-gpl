@@ -1,0 +1,17 @@
+<header>Install database driver automatically?</header>
+
+This option is only used when installing Django 6.x with a MySQL database. <p>
+
+If enabled, Virtualmin will install the required system build packages and
+compile the <tt>mysqlclient</tt> Python database driver automatically during the
+Django installation. <p>
+
+If disabled, Virtualmin will not install those build packages or compile the
+driver. Choose this only if <tt>mysqlclient</tt> is already installed for the
+selected Python version, or if you plan to install it yourself before retrying
+this Django install. <p>
+
+This setting has no effect for PostgreSQL installs, and Django versions before
+6 continue to use the older package-based MySQL driver path. <p>
+
+<footer>

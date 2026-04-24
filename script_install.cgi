@@ -161,7 +161,7 @@ $derr = &check_script_depends($script, $d, $ver, $sinfo, $phpver);
 # First fetch needed files
 $ferr = &fetch_script_files($script, $d, $ver, $opts, $sinfo, \%gotfiles);
 &error($ferr) if ($ferr);
-print "<br>\n";
+print "<br>\n" if (keys %gotfiles);
 
 # Install needed PHP and Perl modules
 if (!&setup_script_requirements($d, $script, $ver, $phpver, $opts, $sinfo)) {
