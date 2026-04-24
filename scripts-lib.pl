@@ -1993,10 +1993,10 @@ else {
 # Makes an HTTP post to some URL, sending the given CGI parameters as data.
 sub post_http_connection
 {
-local ($d, $page, $params, $out, $err, $headers,
-       $returnheaders, $returnheaders_array) = @_;
-local $ip = $d->{'ip'};
-local $host = &get_domain_http_hostname($d);
+my ($d, $page, $params, $out, $err, $headers,
+    $returnheaders, $returnheaders_array) = @_;
+my $ip = $d->{'ip'};
+my $host = &get_domain_http_hostname($d);
 my $usessl = &domain_has_ssl($d);
 my $port = $usessl ? $d->{'web_sslport'} : $d->{'web_port'};
 
@@ -2005,8 +2005,8 @@ $gconfig{'http_proxy'} = '';			# to the IP explicitly
 $main::download_timed_out = undef;
 local $SIG{ALRM} = \&download_timeout;
 alarm(300);
-local $h = &make_http_connection($ip, $port, $usessl, "POST", $page,
-			 undef, undef, { 'host' => $host, 'nocheckhost' => 1 });
+my $h = &make_http_connection($ip, $port, $usessl, "POST", $page,
+			      undef, undef, { 'host' => $host, 'nocheckhost' => 1 });
 $gconfig{'http_proxy'} = $oldproxy;
 if (!ref($h)) {
 	$$err = $h;
@@ -2067,16 +2067,16 @@ if ($_[0] == 4) {
 # IP, hostname and port. For use by scripts needing to call wizards and such.
 sub get_http_connection
 {
-local ($d, $page, $dest, $error, $cbfunc, $ssl, $user, $pass,
-       $timeout, $osdn, $nocache, $headers) = @_;
-local $ip = $d->{'ip'} || $d->{'ip6'};
-local $host = &get_domain_http_hostname($d);
+my ($d, $page, $dest, $error, $cbfunc, $ssl, $user, $pass,
+    $timeout, $osdn, $nocache, $headers) = @_;
+my $ip = $d->{'ip'} || $d->{'ip6'};
+my $host = &get_domain_http_hostname($d);
 my $usessl = &domain_has_ssl($d);
 my $port = $usessl ? $d->{'web_sslport'} : $d->{'web_port'}  || 80;
 $ssl = $usessl;
 
 # Build headers
-local @headers;
+my @headers;
 push(@headers, [ "Host", $host ]);
 push(@headers, [ "User-agent", "Webmin" ]);
 if ($user) {
@@ -2114,8 +2114,8 @@ if (!ref($h)) {
 # Once an HTTP connection is active, complete the download
 sub complete_http_connection
 {
-local ($d, $h, $dest, $error, $cbfunc, $osdn, $oldhost,
-       $oldport, $oldpage, $headers) = @_;
+my ($d, $h, $dest, $error, $cbfunc, $osdn, $oldhost,
+    $oldport, $oldpage, $headers) = @_;
 
 # Kept local so that callback funcs can access them.
 local (%WebminCore::header, @WebminCore::headers);
@@ -2262,10 +2262,10 @@ return @rv;
 # Set permissions on a file so that it is writable by PHP
 sub make_file_php_writable
 {
-local ($d, $file, $dironly, $setowner) = @_;
-local $mode = &get_domain_php_mode($d);
-local $perms = $mode eq "mod_php" ? 0777 : 0755;
-local @st = stat($file);
+my ($d, $file, $dironly, $setowner) = @_;
+my $mode = &get_domain_php_mode($d);
+my $perms = $mode eq "mod_php" ? 0777 : 0755;
+my @st = stat($file);
 if (-d $file && !$dironly) {
 	if ($setowner && $st[4] != $d->{'uid'}) {
 		&system_logged(sprintf("chown -R %d:%d %s",
@@ -2286,7 +2286,7 @@ else {
 # make_file_php_nonwritable(&domain, file, [dir-only])
 sub make_file_php_nonwritable
 {
-local ($d, $file, $dironly) = @_;
+my ($d, $file, $dironly) = @_;
 if (-d $file && !$dironly) {
 	&execute_as_domain_user($d, "chmod -R 555 ".quotemeta($file));
 	}
@@ -2300,14 +2300,14 @@ else {
 # an error message on failure.
 sub delete_script_install_directory
 {
-local ($d, $opts) = @_;
+my ($d, $opts) = @_;
 $opts->{'dir'} || return "Missing install directory!";
 &is_under_directory($d->{'home'}, $opts->{'dir'}) ||
 	return "Invalid install directory $opts->{'dir'}";
 
 # Check for overlapping script dirs
-local @others = &list_domain_scripts($d);
-local %overlap;
+my @others = &list_domain_scripts($d);
+my %overlap;
 foreach my $sinfo (@others) {
 	if ($sinfo->{'opts'}->{'dir'} =~ /^\Q$opts->{'dir'}\E\/(\S+)$/) {
 		$overlap{$1} = 1;
@@ -2323,7 +2323,7 @@ if ($opts->{'dir'} eq &public_html_dir($d)) {
 
 if (!scalar(keys %overlap)) {
 	# Delete all sub-directories
-	local $out = &backquote_logged(
+	my $out = &backquote_logged(
 		"rm -rf ".quotemeta($opts->{'dir'})."/* ".
 			  quotemeta($opts->{'dir'})."/.??* 2>&1");
 	$? && return "Failed to delete files : <tt>$out</tt>";
@@ -2355,7 +2355,7 @@ my $myd = ref($_[0]) ? shift(@_) : $d;
 my ($dbtype, $dbname, $dbuser, $dbpass) = @_;
 if (&indexof($dbtype, @database_features) >= 0) {
 	# Core feature
-	local $cfunc = "check_".$dbtype."_login";
+	my $cfunc = "check_".$dbtype."_login";
 	if (defined(&$cfunc)) {
 		return &$cfunc($d, $dbname, $dbuser, $dbpass);
 		}
@@ -2373,7 +2373,7 @@ return undef;
 # At the moment, all it does is try to install 'gem'
 sub setup_ruby_modules
 {
-local ($d, $script, $ver, $opts) = @_;
+my ($d, $script, $ver, $opts) = @_;
 
 if (!&has_command("gem") &&
     &indexof("ruby", @{$script->{'uses'}}) >= 0) {
@@ -2395,9 +2395,9 @@ if (!&has_command("gem") &&
 	# 'rubygems' on all update systems.
 	&software::update_system_install("rubygems");
 	delete($main::has_command_cache{'gem'});
-	local $newpkg = $software::update_system eq "csw" ? "CSWrubygems"
-							  : "rubygems";
-	local @pinfo = &software::package_info($newpkg);
+	my $newpkg = $software::update_system eq "csw" ? "CSWrubygems"
+						       : "rubygems";
+	my @pinfo = &software::package_info($newpkg);
 	if (@pinfo && $pinfo[0] eq $newpkg) {
 		# Worked
 		&$second_print($text{'setup_done'});
@@ -2409,17 +2409,17 @@ if (!&has_command("gem") &&
 	}
 
 # Check if a Gem version was requested, and if so update to it
-local $vfunc = $script->{'gem_version_func'};
+my $vfunc = $script->{'gem_version_func'};
 if (defined(&$vfunc)) {
-	local $needver = &$vfunc($d, $ver, $opts);
-	local $gotver = &get_gem_version();
+	my $needver = &$vfunc($d, $ver, $opts);
+	my $gotver = &get_gem_version();
 	if (&compare_versions($needver, $gotver) > 0) {
 		# Need a newer Gem version! Try to update
 		&$first_print(&text('scripts_gemver', $gotver));
-		local $gempath = &has_command("gem");
-		local $rver = &get_ruby_version();
+		my $gempath = &has_command("gem");
+		my $rver = &get_ruby_version();
 		$rver =~ s/^(\d+\.\d+).*/$1/;	# Make it like just 1.8
-		local $oldgemverpath = &has_command("gem".$rver);
+		my $oldgemverpath = &has_command("gem".$rver);
 		&execute_command("gem list --remote");	# Force cache init
 		$out = &backquote_logged(
 			"gem update --system 2>&1 </dev/null");
@@ -2440,7 +2440,7 @@ if (defined(&$vfunc)) {
 
 			# If the update installed gem1.8, link the old gem
 			# command to it instead
-			local $newgemverpath = &has_command("gem".$rver);
+			my $newgemverpath = &has_command("gem".$rver);
 			if ($newgemverpath && !$oldgemverpath &&
 			    $gempath &&
 			    !&same_file($gempath, $newgemverpath)) {
@@ -2456,16 +2456,16 @@ if (defined(&$vfunc)) {
 	}
 
 # Check if any Gems were needed
-local $gfunc = $script->{'gems_func'};
+my $gfunc = $script->{'gems_func'};
 if (defined(&$gfunc)) {
-	local @gems = &$gfunc($d, $ver, $opts);
+	my @gems = &$gfunc($d, $ver, $opts);
 	foreach my $g (@gems) {
-		local ($name, $version, $nore, $optional) = @$g;
+		my ($name, $version, $nore, $optional) = @$g;
 		&$first_print(
 		  $version ? &text('scripts_geminstall2',
 				   "<tt>$name</tt>", $version) :
 			     &text('scripts_geminstall', "<tt>$name</tt>"));
-		local $err = &install_ruby_gem($name, $version, $nore);
+		my $err = &install_ruby_gem($name, $version, $nore);
 		if ($err) {
 			&$second_print(&text('scripts_gemfailed',
 					"<tt>".&html_escape($err)."</tt>"));
@@ -2485,9 +2485,9 @@ return 1;
 # that are missing.
 sub check_script_required_commands
 {
-local ($d, $script, $ver, $opts) = @_;
-local $cfunc = $script->{'commands_func'};
-local @missing;
+my ($d, $script, $ver, $opts) = @_;
+my $cfunc = $script->{'commands_func'};
+my @missing;
 if ($cfunc && defined(&$cfunc)) {
 	foreach my $c (&$cfunc($d, $ver, $opts)) {
 		if (!&has_command($c)) {
@@ -2503,27 +2503,27 @@ return @missing;
 # some URL, to perform some periodic task for a script
 sub create_script_wget_job
 {
-local ($d, $url, $mins, $hours, $callnow) = @_;
+my ($d, $url, $mins, $hours, $callnow) = @_;
 return 0 if (!&foreign_check("cron"));
 &foreign_require("cron");
-local $wget = &has_command("wget");
+my $wget = &has_command("wget");
 return 0 if (!$wget);
-local $job = { 'user' => $d->{'user'},
-	       'active' => 1,
-	       'command' => "$wget -q -O /dev/null $url",
-	       'mins' => $mins,
-	       'hours' => $hours,
-	       'days' => '*',
-	       'months' => '*',
-	       'weekdays' => '*' };
+my $job = { 'user' => $d->{'user'},
+	    'active' => 1,
+	    'command' => "$wget -q -O /dev/null $url",
+	    'mins' => $mins,
+	    'hours' => $hours,
+	    'days' => '*',
+	    'months' => '*',
+	    'weekdays' => '*' };
 &cron::create_cron_job($job);
 if ($callnow) {
 	# Fetch the URL now
-	local ($host, $port, $page, $ssl) = &parse_http_url($url);
+	my ($host, $port, $page, $ssl) = &parse_http_url($url);
 	if ($host eq $d->{'dom'} && $port == ($d->{'web_sslport'} || $d->{'web_port'} || 80)) {
 		# On this domain .. can use internal function which handles
 		# use of internal IP
-		local ($out, $err);
+		my ($out, $err);
 		&get_http_connection($d, $page, \$out, \$err);
 		}
 	else {
@@ -2539,13 +2539,13 @@ return 1;
 # Deletes the cron job that regularly fetches some URL
 sub delete_script_wget_job
 {
-local ($d, $url) = @_;
+my ($d, $url) = @_;
 return 0 if (!&foreign_check("cron"));
 &foreign_require("cron");
-local @jobs = &cron::list_cron_jobs();
-local ($job) = grep { $_->{'user'} eq $d->{'user'} &&
-		      $_->{'command'} =~ /^\S*wget\s.*\s(\S+)$/ &&
-		      $1 eq $url } @jobs;
+my @jobs = &cron::list_cron_jobs();
+my ($job) = grep { $_->{'user'} eq $d->{'user'} &&
+		   $_->{'command'} =~ /^\S*wget\s.*\s(\S+)$/ &&
+		   $1 eq $url } @jobs;
 return 0 if (!$job);
 &cron::delete_cron_job($job);
 return 1;
@@ -2555,21 +2555,21 @@ return 1;
 # If missing, create a cron job to run some PHP command
 sub create_script_php_cron
 {
-local ($d, $cmd, $phpver, $mins, $hours, $callnow) = @_;
+my ($d, $cmd, $phpver, $mins, $hours, $callnow) = @_;
 return 0 if (!&foreign_check("cron"));
 &foreign_require("cron");
 $cmd =~ /^(.*)\//;
-local $dir = $1;
-local $php = &php_command_for_version($phpver, 2);
-local $fullcmd = "cd $dir && $php -f $cmd >/dev/null 2>&1";
-local $job = { 'user' => $d->{'user'},
-	       'active' => 1,
-	       'command' => $fullcmd,
-	       'mins' => $mins,
-	       'hours' => $hours,
-	       'days' => '*',
-	       'months' => '*',
-	       'weekdays' => '*' };
+my $dir = $1;
+my $php = &php_command_for_version($phpver, 2);
+my $fullcmd = "cd $dir && $php -f $cmd >/dev/null 2>&1";
+my $job = { 'user' => $d->{'user'},
+	    'active' => 1,
+	    'command' => $fullcmd,
+	    'mins' => $mins,
+	    'hours' => $hours,
+	    'days' => '*',
+	    'months' => '*',
+	    'weekdays' => '*' };
 &cron::create_cron_job($job);
 if ($callnow) {
 	&system_logged(&command_as_user($d->{'user'}, 0, $fullcmd));
@@ -2595,8 +2595,8 @@ return 1;
 # Returns a list of script updates that can be done in the given domains
 sub list_script_upgrades
 {
-local ($doms) = @_;
-local (%scache, @rv);
+my ($doms) = @_;
+my (%scache, @rv);
 foreach my $d (@$doms) {
 	&detect_real_script_versions($d);
 	foreach my $sinfo (&list_domain_scripts($d)) {
@@ -2604,16 +2604,16 @@ foreach my $d (@$doms) {
 		$script = $scache{$sinfo->{'name'}} ||
 			    &get_script($sinfo->{'name'});
 		$scache{$sinfo->{'name'}} = $script;
-		local @vers = grep { &can_script_version($script, $_) }
+		my @vers = grep { &can_script_version($script, $_) }
 			     @{$script->{'versions'}};
-		local $canupfunc = $script->{'can_upgrade_func'};
+		my $canupfunc = $script->{'can_upgrade_func'};
 		if (defined(&$canupfunc)) {
 			@vers = grep { &$canupfunc($sinfo, $_) > 0 } @vers;
 			}
 		@vers = sort { &compare_versions($b, $a, $script) } @vers;
-		local @better = grep { &compare_versions($_,
+		my @better = grep { &compare_versions($_,
 				$sinfo->{'version'}, $script) > 0 } @vers;
-		local $ver = @better ? $better[$#better] : undef;
+		my $ver = @better ? $better[$#better] : undef;
 		next if (!$ver);
 
 		# Don't upgrade if we are already running this version
@@ -2638,11 +2638,11 @@ return @rv;
 # on success, or an HTML error message on failure.
 sub extract_script_archive
 {
-local ($file, $dir, $d, $copydir, $subdir, $single, $ignore, $skip) = @_;
+my ($file, $dir, $d, $copydir, $subdir, $single, $ignore, $skip) = @_;
 
 # Create the target dir if missing
 if (!$single && $copydir && !-d $copydir) {
-	local $out = &run_as_domain_user(
+	my $out = &run_as_domain_user(
 		$d, "mkdir -p ".quotemeta($copydir)." 2>&1");
 	if ($?) {
 		return "Failed to create target directory : ".
@@ -2660,9 +2660,9 @@ if (!-d $dir) {
 	&make_dir($dir, 0755);
 	&set_ownership_permissions($d->{'uid'}, $d->{'ugid'}, undef, $dir);
 	}
-local $fmt = &compression_format($file);
-local $qfile = quotemeta($file);
-local $cmd;
+my $fmt = &compression_format($file);
+my $qfile = quotemeta($file);
+my $cmd;
 if ($fmt == 0) {
 	return "Not a compressed file";
 	}
@@ -2685,7 +2685,7 @@ elsif ($fmt == 5) {
 else {
 	return "Unknown compression format";
 	}
-local $out = &run_as_domain_user($d, "(cd ".quotemeta($dir)." && ".$cmd.") 2>&1");
+my $out = &run_as_domain_user($d, "(cd ".quotemeta($dir)." && ".$cmd.") 2>&1");
 return "Uncompression failed : <pre>".&html_escape($out)."</pre>"
 	if ($? && !$ignore);
 
@@ -2701,7 +2701,7 @@ if ($copydir && -e $copydir) {
 
 # Copy to a target dir, if requested
 if ($copydir) {
-	local $path = "$dir/$subdir";
+	my $path = "$dir/$subdir";
 	if (!-e $path) {
 		# Subdir might be a glob
 		($path) = glob(quotemeta($dir)."/$subdir")
@@ -2745,7 +2745,7 @@ if ($copydir) {
 		&unlink_file_as_domain_user($d, $hfile);
 		}
 
-	local $out;
+	my $out;
 	if (-f $path) {
 		# Copy one file
 		$out = &run_as_domain_user($d, "cp ".quotemeta($dir).
@@ -2774,8 +2774,8 @@ if ($copydir) {
 
 	# Make dest files non-world-readable and user writable, unless we don't
 	# add Apache to a group, or if the home is world-readable
-	local $mode = &get_domain_php_mode($d);
-	local @st = stat($d->{'home'});
+	my $mode = &get_domain_php_mode($d);
+	my @st = stat($d->{'home'});
 	if (&apache_in_domain_group($d) && ($st[2]&07) == 0) {
 		# Apache is a member of the domain's group, so we can make
 		# all script files non-world-readable
@@ -2801,15 +2801,15 @@ return undef;
 # be created by the script install process.
 sub has_domain_databases
 {
-local ($d, $types, $nocreate) = @_;
-local @dbs = &domain_databases($d, $types);
+my ($d, $types, $nocreate) = @_;
+my @dbs = &domain_databases($d, $types);
 if (@dbs) {
 	return 1;
 	}
 if (!$nocreate) {
 	# Can we create one?
-	local ($dleft, $dreason, $dmax) = &count_feature("dbs");
-	local @ftypes = grep { $d->{$_} } @$types;
+	my ($dleft, $dreason, $dmax) = &count_feature("dbs");
+	my @ftypes = grep { $d->{$_} } @$types;
 	if (@ftypes && $dleft != 0 && &can_edit_databases()) {
 		return 1;
 		}
@@ -2821,15 +2821,15 @@ return 0;
 # Returns the highest version number from some script file
 sub guess_script_version
 {
-local ($file) = @_;
-local $lref = &read_file_lines($file, 1);
+my ($file) = @_;
+my $lref = &read_file_lines($file, 1);
 for(my $i=0; $i<@$lref; $i++) {
 	if ($lref->[$i] =~ /^\s*sub\s+script_\S+_versions/) {
 		if ($lref->[$i+2] =~ /^\s*return\s+\(([^\)]*)\)/ ||
 		    $lref->[$i+1] =~ /^\s*return\s+\(([^\)]*)\)/) {
-			local $verlist = $1;
+			my $verlist = $1;
 			$verlist =~ s/^\s+//; $verlist =~ s/\s+$//;
-			local @vers = &split_quoted_string($verlist);
+			my @vers = &split_quoted_string($verlist);
 			return $vers[0];
 			}
 		return undef;	# Versions not found where expected
@@ -2843,7 +2843,7 @@ return undef;
 # Prints messages, and returns 1 on success, 0 on failure.
 sub setup_noproxy_path
 {
-local ($d, $script, $ver, $opts, $forceadd) = @_;
+my ($d, $script, $ver, $opts, $forceadd) = @_;
 
 # Check if the script doesn't use proxying
 return 1 if (&indexof("proxy", @{$script->{'uses'}}) == -1);
@@ -2852,8 +2852,8 @@ return 1 if (&indexof("proxy", @{$script->{'uses'}}) == -1);
 return 1 if (!&has_proxy_balancer($d) || !&has_proxy_none($d));
 
 # Check if a proxy exists for a parent path
-local @proxies = &list_proxy_balancers($d);
-local $clash;
+my @proxies = &list_proxy_balancers($d);
+my $clash;
 foreach my $p (@proxies) {
 	if (!$p->{'none'} &&
 	    ($p->{'path'} eq '/' ||
@@ -2872,7 +2872,7 @@ foreach my $p (@proxies) {
 		}
 	}
 
-local $err;
+my $err;
 if ($clash && $clash->{'path'} eq $opts->{'path'}) {
 	# Remove direct clash
 	&$first_print(&text('scripts_delproxy', $opts->{'path'}));
@@ -2881,7 +2881,7 @@ if ($clash && $clash->{'path'} eq $opts->{'path'}) {
 elsif ($clash || $forceadd) {
 	# Add a negative override
 	&$first_print(&text('scripts_addover', $opts->{'path'}));
-	local $over = { 'path' => $opts->{'path'}, 'none' => 1 };
+	my $over = { 'path' => $opts->{'path'}, 'none' => 1 };
 	$err = &create_proxy_balancer($d, $over);
 	}
 else {
@@ -2902,14 +2902,14 @@ else {
 # Delete any negative proxy for a script, as created by setup_noproxy_path
 sub delete_noproxy_path
 {
-local ($d, $script, $ver, $opts) = @_;
+my ($d, $script, $ver, $opts) = @_;
 
 # Check if the script doesn't use proxying, and if Apache supports negatives
 return 0 if (&indexof("proxy", @{$script->{'uses'}}) >= 0);
 return 0 if (!&has_proxy_balancer($d) || !&has_proxy_none($d));
 
 # Find and remove the negator
-local @proxies = &list_proxy_balancers($d);
+my @proxies = &list_proxy_balancers($d);
 foreach my $p (@proxies) {
 	if ($p->{'path'} eq $opts->{'path'} && $p->{'none'}) {
 		&delete_proxy_balancer($d, $p);
@@ -2924,7 +2924,7 @@ return 0;
 # Returns 1 on success, 0 on failure. May print stuff.
 sub setup_script_requirements
 {
-local ($d, $script, $ver, $phpver, $opts, $upgrade) = @_;
+my ($d, $script, $ver, $phpver, $opts, $upgrade) = @_;
 
 # Install modules needed for various scripting languages
 &setup_php_modules($d, $script, $ver, $phpver, $opts) || return 0;
@@ -2956,13 +2956,13 @@ return 1;
 # Install any software packages requested by the script
 sub setup_script_packages
 {
-local ($script, $d, $ver) = @_;
-local $pkgfunc = $script->{'packages_func'};
+my ($script, $d, $ver) = @_;
+my $pkgfunc = $script->{'packages_func'};
 return 1 if (!defined(&$pkgfunc));
-local @pkgs = &$pkgfunc($d, $ver);
+my @pkgs = &$pkgfunc($d, $ver);
 return 1 if (!@pkgs);
 &$first_print(&text('scripts_needpackages', scalar(@pkgs)));
-local $canpkgs = 0;
+my $canpkgs = 0;
 if (&foreign_installed("software")) {
 	&foreign_require("software");
 	if (defined(&software::update_system_install)) {
@@ -2974,10 +2974,10 @@ if (!$canpkgs) {
 	return 0;
 	}
 &$indent_print();
-local $count = 0;
+my $count = 0;
 foreach my $p (@pkgs) {
 	&$first_print(&text('scripts_installpackage', $p));
-	local @pinfo = &software::package_info($p);
+	my @pinfo = &software::package_info($p);
 	if (@pinfo && $pinfo[0] eq $p) {
 		# Looks like we already have it!
 		&$second_print($text{'scripts_gotpackage'});
@@ -2992,7 +2992,7 @@ foreach my $p (@pkgs) {
 		}
 	elsif ($first_print eq \&first_text_print) {
 		# Make output text
-		local $out = &capture_function_output(
+		my $out = &capture_function_output(
 		    \&software::update_system_install, $p);
 		print &html_tags_to_text($out);
 		}
@@ -3002,7 +3002,7 @@ foreach my $p (@pkgs) {
 		}
 
 	# Did it work?
-	local @pinfo = &software::package_info($p);
+	my @pinfo = &software::package_info($p);
 	if (@pinfo && $pinfo[0] eq $p) {
 		&$second_print($text{'setup_done'});
 		$count++;
@@ -3022,12 +3022,12 @@ return 1;
 # missing commands.
 sub check_script_depends
 {
-local ($script, $d, $ver, $sinfo, $phpver) = @_;
-local @rv;
+my ($script, $d, $ver, $sinfo, $phpver) = @_;
+my @rv;
 
 if (&indexof("php", @{$script->{'uses'}}) >= 0) {
 	# If the script uses PHP, make sure it's enabled for the domain
-	local $mode = &get_domain_php_mode($d);
+	my $mode = &get_domain_php_mode($d);
 	if ($mode eq "none") {
 		push(@rv, $text{'scripts_iphpneed'});
 		}
@@ -3060,10 +3060,10 @@ if (defined(&{$script->{'depends_func'}})) {
 
 # Check for DB type
 if (defined(&{$script->{'dbs_func'}})) {
-	local @dbs = &{$script->{'dbs_func'}}($d, $ver);
+	my @dbs = &{$script->{'dbs_func'}}($d, $ver);
 	if (!&has_domain_databases($d, \@dbs)) {
-		local @dbnames = map { $text{'databases_'.$_} || $_ } @dbs;
-		local $dbneed = @dbnames == 1 ?
+		my @dbnames = map { $text{'databases_'.$_} || $_ } @dbs;
+		my $dbneed = @dbnames == 1 ?
 			$dbnames[0] :
 			&text('scripts_idbneedor', @dbnames[0..$#dbnames-1],
 						   $dbnames[$#dbnames]);
@@ -3103,7 +3103,7 @@ push(@rv, map { &text('scripts_icommand', "<tt>$_</tt>") }
       &check_script_required_commands($d, $script, $ver, $sinfo->{'opts'}));
 
 # Check for webserver CGI or PHP support
-local $p = &domain_has_website($d);
+my $p = &domain_has_website($d);
 if (&indexof("cgi", @{$script->{'uses'}}) >= 0 && !&get_domain_cgi_mode($d)) {
 	return $text{'scripts_inocgi'};
 	}
@@ -3123,7 +3123,7 @@ return wantarray ? @rv : join(", ", @rv);
 # disabled scripts or versions, and if new scripts are denied by default
 sub get_script_master_permissions
 {
-local %unavail;
+my %unavail;
 &read_file_cached($scripts_unavail_file, \%unavail);
 return ($unavail{'allowmaster'}, $unavail{'allowvers'},
 	$unavail{'denydefault'});
@@ -3133,8 +3133,8 @@ return ($unavail{'allowmaster'}, $unavail{'allowvers'},
 # Updates flags indicating what the master is allow to do for disabled scripts
 sub save_script_master_permissions
 {
-local ($allow, $allowvers, $denydefault) = @_;
-local %unavail;
+my ($allow, $allowvers, $denydefault) = @_;
+my %unavail;
 &lock_file($scripts_unavail_file);
 &read_file_cached($scripts_unavail_file, \%unavail);
 ($unavail{'allowmaster'}, $unavail{'allowvers'},
@@ -3147,9 +3147,9 @@ local %unavail;
 # Create, update or delete the cron job that sends script update notifications
 sub setup_scriptwarn_job
 {
-local ($enabled, $when) = @_;
+my ($enabled, $when) = @_;
 &foreign_require("cron");
-local $job = &find_cron_script($scriptwarn_cron_cmd);
+my $job = &find_cron_script($scriptwarn_cron_cmd);
 if ($job && !$enabled) {
 	# Delete job
 	&delete_cron_script($job);
@@ -3174,9 +3174,9 @@ elsif ($job && $enabled && $when &&
 # Create or delete the cron job that downloads script updates
 sub setup_scriptlatest_job
 {
-local ($enabled) = @_;
+my ($enabled) = @_;
 &foreign_require("cron");
-local $job = &find_cron_script($scriptlatest_cron_cmd);
+my $job = &find_cron_script($scriptlatest_cron_cmd);
 if ($job && !$enabled) {
 	# Delete job
 	&delete_cron_script($job);
@@ -3236,12 +3236,12 @@ return $job->{'hours'} eq '0' && $job->{'days'} eq '*' &&
 # manually via some internal function, like Wordpress
 sub detect_real_script_versions
 {
-local ($d) = @_;
+my ($d) = @_;
 foreach my $sinfo (&list_domain_scripts($d)) {
 	my $script = &get_script($sinfo->{'name'});
 	my $rfunc = $script->{'realversion_func'};
 	if (defined(&$rfunc)) {
-		local $realver = &$rfunc($d, $sinfo->{'opts'}, $sinfo);
+		my $realver = &$rfunc($d, $sinfo->{'opts'}, $sinfo);
 		if ($realver && $realver ne $sinfo->{'version'}) {
 			# Version has changed .. fix
 			$sinfo->{'version'} = $realver;
@@ -3255,7 +3255,7 @@ foreach my $sinfo (&list_domain_scripts($d)) {
 # Quote ' and " characters in a PHP string
 sub php_quotemeta
 {
-local ($str, $single) = @_;
+my ($str, $single) = @_;
 $str =~ s/\\/\\\\/g;
 $str =~ s/'/\\'/g;
 if (!$single) {
@@ -3269,14 +3269,14 @@ return $str;
 # Returns an install script directory name, based on the config
 sub substitute_scriptname_template
 {
-local ($name, $d) = @_;
+my ($name, $d) = @_;
 if ($config{'scriptdir'} eq '*') {
 	# Public HTML dir
 	return "";
 	}
 elsif ($config{'scriptdir'}) {
 	# Template for directory
-	local %hash = &make_domain_substitions($d, 0);
+	my %hash = &make_domain_substitions($d, 0);
 	$hash{'SCRIPTNAME'} = $name;
 	return &substitute_virtualmin_template($config{'scriptdir'}, \%hash);
 	}
@@ -3346,17 +3346,17 @@ return wantarray ? ($status, $canup) : $status;
 # XXX fpm mode support
 sub disable_script_php_timeout
 {
-local ($d) = @_;
-local $mode = &get_domain_php_mode($d);
+my ($d) = @_;
+my $mode = &get_domain_php_mode($d);
 if ($mode eq "fcgid") {
-	local $max = &get_fcgid_max_execution_time($d);
+	my $max = &get_fcgid_max_execution_time($d);
 	return undef if (!$max);
 	&set_fcgid_max_execution_time($d, $max_php_fcgid_timeout);
 	&set_php_max_execution_time($d, $max_php_fcgid_timeout);
 	return $max;
 	}
 elsif ($mode eq "cgi") {
-	local $max = &get_php_max_execution_time($d);
+	my $max = &get_php_max_execution_time($d);
 	return undef if (!$max);
 	&set_php_max_execution_time($d, $max_php_fcgid_timeout);
 	return $max;
@@ -3371,9 +3371,9 @@ else {
 # XXX fpm mode support
 sub enable_script_php_timeout
 {
-local ($d, $max) = @_;
+my ($d, $max) = @_;
 if (defined($max)) {
-	local $mode = &get_domain_php_mode($d);
+	my $mode = &get_domain_php_mode($d);
 	if ($mode eq "fcgid") {
 		&set_fcgid_max_execution_time($d, $max);
 		&set_php_max_execution_time($d, $max);
