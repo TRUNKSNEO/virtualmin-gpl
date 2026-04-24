@@ -4,8 +4,8 @@
 # Returns a list of installable script names
 sub list_scripts
 {
-local ($coreonly) = @_;
-local @rv;
+my ($coreonly) = @_;
+my @rv;
 
 # From core directories
 my @sd = @scripts_directories;
@@ -35,9 +35,9 @@ return &unique(@rv);
 # not available
 sub list_available_scripts
 {
-local %unavail;
+my %unavail;
 &read_file_cached($scripts_unavail_file, \%unavail);
-local @rv = &list_scripts();
+my @rv = &list_scripts();
 if (!&master_admin() || !$unavail{'allowmaster'}) {
 	# Remove globally disabled scripts
 	@rv = grep { $unavail{$_} eq '0' ||
@@ -45,7 +45,7 @@ if (!&master_admin() || !$unavail{'allowmaster'}) {
 	}
 if ($access{'allowedscripts'}) {
 	# Remove per-user disallowed scripts
-	local %allow = map { $_, 1 } split(/\s+/, $access{'allowedscripts'});
+	my %allow = map { $_, 1 } split(/\s+/, $access{'allowedscripts'});
 	@rv = grep { $allow{$_} } @rv;
 	}
 return @rv;
@@ -55,15 +55,15 @@ return @rv;
 # Returns the structure for some script
 sub get_script
 {
-local ($name, $coreonly) = @_;
+my ($name, $coreonly) = @_;
 
 # Find all .pl files for this script, which may come from plugins or
 # the core
-local @sfiles;
+my @sfiles;
 foreach my $s ($coreonly ? "$module_root_directory/scripts"
 		         : @scripts_directories) {
-	local $spath = "$s/$name.pl";
-	local @st = stat($spath);
+	my $spath = "$s/$name.pl";
+	my @st = stat($spath);
 	if (@st) {
 		push(@sfiles, [ $spath, $st[9],
 			&guess_script_version($spath),
@@ -74,8 +74,8 @@ foreach my $s ($coreonly ? "$module_root_directory/scripts"
 if (!$coreonly) {
 	# Get script from plugins
 	foreach my $p (&list_script_plugins()) {
-		local $spath = &module_root_directory($p)."/$name.pl";
-		local @st = stat($spath);
+		my $spath = &module_root_directory($p)."/$name.pl";
+		my @st = stat($spath);
 		if (@st) {
 			push(@sfiles, [ $spath, $st[9],
 				&guess_script_version($spath), 'plugin' ]);
@@ -100,7 +100,7 @@ foreach my $p (&check_script_plugins_extensions()) {
 # Work out the newest one, so that plugins can override Virtualmin and
 # vice-versa
 if (@sfiles > 1) {
-	local @notver = grep { !$_->[2] } @sfiles;
+	my @notver = grep { !$_->[2] } @sfiles;
 	if (@notver) {
 		# Need to use time-based comparison
 		@sfiles = sort { $b->[1] <=> $a->[1] } @sfiles;
@@ -110,8 +110,8 @@ if (@sfiles > 1) {
 		@sfiles = sort { &compare_versions($b->[2], $a->[2]) } @sfiles;
 		}
 	}
-local $spath = $sfiles[0]->[0];
-local $sdir = $spath;
+my $spath = $sfiles[0]->[0];
+my $sdir = $spath;
 $sdir =~ s/\/[^\/]+$//;
 
 # Read in the .pl file
@@ -122,119 +122,119 @@ if ($sfiles[0]->[4]) {
 		(do $efile) if (-r $efile);
 		}
 	}
-local $dfunc = "script_${name}_desc";
-local $tmdfunc = "script_${name}_tmdesc";
-local $lfunc = "script_${name}_longdesc";
-local $vfunc = "script_${name}_versions";
-local $nvfunc = "script_${name}_numeric_version";
-local $rvfunc = "script_${name}_release_version";
-local $rfunc = "script_${name}_release";
-local $ufunc = "script_${name}_uses";
-local $vdfunc = "script_${name}_version_desc";
-local $catfunc = "script_${name}_category";
-local $disfunc = "script_${name}_disabled";
-local $sitefunc = "script_${name}_site";
-local $authorfunc = "script_${name}_author";
-local $overlapfunc = "script_${name}_overlap";
-local $migratedfunc = "script_${name}_migrated";
-local $testpathfunc = "script_${name}_testpath";
-local $testargsfunc = "script_${name}_testargs";
+my $dfunc = "script_${name}_desc";
+my $tmdfunc = "script_${name}_tmdesc";
+my $lfunc = "script_${name}_longdesc";
+my $vfunc = "script_${name}_versions";
+my $nvfunc = "script_${name}_numeric_version";
+my $rvfunc = "script_${name}_release_version";
+my $rfunc = "script_${name}_release";
+my $ufunc = "script_${name}_uses";
+my $vdfunc = "script_${name}_version_desc";
+my $catfunc = "script_${name}_category";
+my $disfunc = "script_${name}_disabled";
+my $sitefunc = "script_${name}_site";
+my $authorfunc = "script_${name}_author";
+my $overlapfunc = "script_${name}_overlap";
+my $migratedfunc = "script_${name}_migrated";
+my $testpathfunc = "script_${name}_testpath";
+my $testargsfunc = "script_${name}_testargs";
 
 # Check for critical functions
 return undef if (!defined(&$dfunc) || !defined(&$vfunc));
 
 # Work out availability
-local %unavail;
+my %unavail;
 &read_file_cached($scripts_unavail_file, \%unavail);
-local $disabled;
+my $disabled;
 if (defined(&$disfunc)) {
 	$disabled = &$disfunc();
 	}
-local $allowmaster;
+my $allowmaster;
 if (&master_admin()) {
 	($allowmaster) = &get_script_master_permissions();
 	}
-local $avail = $unavail{$name} eq '0' ||
+my $avail = $unavail{$name} eq '0' ||
 	       $unavail{$name} eq '' && !$unavail{'denydefault'};
-local $avail_only = !$unavail{$name};
+my $avail_only = !$unavail{$name};
 if ($access{'allowedscripts'}) {
-	local %allow = map { $_, 1 } split(/\s+/, $access{'allowedscripts'});
+	my %allow = map { $_, 1 } split(/\s+/, $access{'allowedscripts'});
 	$avail = 0 if (!$allow{$name});
 	}
 
 # Create script structure
-local $rv = { 'name' => $name,
-	      'desc' => &$dfunc(),
-	      'tmdesc' => defined(&$tmdfunc) ? &$tmdfunc() : undef,
-	      'longdesc' => defined(&$lfunc) ? &$lfunc() : undef,
-	      'versions' => [ &$vfunc(0) ],
-	      'install_versions' => [ &$vfunc(1) ],
-	      'preferred_version_func' => "script_${name}_preferred_version",
-	      'numeric_version' => defined(&$nvfunc) ? &$nvfunc() : 0,
-	      'release_version' => defined(&$rvfunc) ? &$rvfunc() : 0,
-	      'release' => defined(&$rfunc) ? &$rfunc() : 0,
-	      'uses' => defined(&$ufunc) ? [ &$ufunc() ] : [ ],
-	      'site' => defined(&$sitefunc) ? &$sitefunc() : undef,
-	      'author' => defined(&$authorfunc) ? &$authorfunc() : undef,
-	      'overlap' => defined(&$overlapfunc) ? &$overlapfunc() : undef,
-	      'dir' => $sdir,
-	      'filename' => $spath,
-	      'source' => $sfiles[0]->[3],
-	      'depends_func' => "script_${name}_depends",
-	      'dbs_func' => "script_${name}_dbs",
-	      'db_conn_desc_func' => "script_${name}_db_conn_desc",
-	      'params_func' => "script_${name}_params",
-	      'parse_func' => "script_${name}_parse",
-	      'check_func' => "script_${name}_check",
-	      'install_func' => "script_${name}_install",
-	      'uninstall_func' => "script_${name}_uninstall",
-	      'realversion_func' => "script_${name}_realversion",
-	      'can_upgrade_func' => "script_${name}_can_upgrade",
-	      'stop_func' => "script_${name}_stop",
-	      'bootup_func' => "script_${name}_bootup",
-	      'stop_server_func' => "script_${name}_stop_server",
-	      'start_server_func' => "script_${name}_start_server",
-	      'status_server_func' => "script_${name}_status_server",
-	      'files_func' => "script_${name}_files",
-	      'php_vars_func' => "script_${name}_php_vars",
-	      'php_mods_func' => "script_${name}_php_modules",
-	      'php_opt_mods_func' => "script_${name}_php_optional_modules",
-	      'php_fullver_func' => "script_${name}_php_fullver",
-	      'php_maxver_func' => "script_${name}_php_maxver",
-	      'mysql_fullver_func' => "script_${name}_mysql_fullver",
-	      'pear_mods_func' => "script_${name}_pear_modules",
-	      'perl_mods_func' => "script_${name}_perl_modules",
-	      'perl_opt_mods_func' => "script_${name}_opt_perl_modules",
-	      'python_fullver_func' => "script_${name}_python_fullver",
-	      'python_maxver_func' => "script_${name}_python_maxver",
-	      'python_mods_func' => "script_${name}_python_modules",
-	      'python_opt_mods_func' => "script_${name}_opt_python_modules",
-	      'gem_version_func' => "script_${name}_gem_version",
-	      'gems_func' => "script_${name}_gems",
-	      'latest_func' => "script_${name}_latest",
-	      'check_latest_func' => "script_${name}_check_latest",
-	      'commands_func' => "script_${name}_commands",
-	      'packages_func' => "script_${name}_packages",
-	      'passmode_func' => "script_${name}_passmode",
-	      'gpl_func' => "script_${name}_gpl",
-	      'avail' => $avail && !$disabled || $allowmaster,
-	      'avail_only' => $avail_only,
-	      'enabled' => !$disabled,
-	      'nocheck' => $disabled == 2,
-	      'minversion' => $unavail{$name."_minversion"},
-	      'abandoned_func' => "script_${name}_abandoned",
-	      'migrated_func' => "script_${name}_migrated",
-	      'testable_func' => "script_${name}_testable",
-	      'testpath_func' => "script_${name}_testpath",
-	      'testinstallpath_func' => "script_${name}_testinstallpath",
-	      'testargs_func' => "script_${name}_testargs",
-	      'kit_func' => "script_${name}_kit",
-	      'kit_func_desc' => "script_${name}_kit_desc",
-	      'kit_login_func' => "script_${name}_kit_login",
-	      'kit_apply_func' => "script_${name}_kit_apply",
-	      'detect_func' => "script_${name}_detect",
-	      'detect_file_func' => "script_${name}_detect_file",
-	    };
+my $rv = { 'name' => $name,
+	   'desc' => &$dfunc(),
+	   'tmdesc' => defined(&$tmdfunc) ? &$tmdfunc() : undef,
+	   'longdesc' => defined(&$lfunc) ? &$lfunc() : undef,
+	   'versions' => [ &$vfunc(0) ],
+	   'install_versions' => [ &$vfunc(1) ],
+	   'preferred_version_func' => "script_${name}_preferred_version",
+	   'numeric_version' => defined(&$nvfunc) ? &$nvfunc() : 0,
+	   'release_version' => defined(&$rvfunc) ? &$rvfunc() : 0,
+	   'release' => defined(&$rfunc) ? &$rfunc() : 0,
+	   'uses' => defined(&$ufunc) ? [ &$ufunc() ] : [ ],
+	   'site' => defined(&$sitefunc) ? &$sitefunc() : undef,
+	   'author' => defined(&$authorfunc) ? &$authorfunc() : undef,
+	   'overlap' => defined(&$overlapfunc) ? &$overlapfunc() : undef,
+	   'dir' => $sdir,
+	   'filename' => $spath,
+	   'source' => $sfiles[0]->[3],
+	   'depends_func' => "script_${name}_depends",
+	   'dbs_func' => "script_${name}_dbs",
+	   'db_conn_desc_func' => "script_${name}_db_conn_desc",
+	   'params_func' => "script_${name}_params",
+	   'parse_func' => "script_${name}_parse",
+	   'check_func' => "script_${name}_check",
+	   'install_func' => "script_${name}_install",
+	   'uninstall_func' => "script_${name}_uninstall",
+	   'realversion_func' => "script_${name}_realversion",
+	   'can_upgrade_func' => "script_${name}_can_upgrade",
+	   'stop_func' => "script_${name}_stop",
+	   'bootup_func' => "script_${name}_bootup",
+	   'stop_server_func' => "script_${name}_stop_server",
+	   'start_server_func' => "script_${name}_start_server",
+	   'status_server_func' => "script_${name}_status_server",
+	   'files_func' => "script_${name}_files",
+	   'php_vars_func' => "script_${name}_php_vars",
+	   'php_mods_func' => "script_${name}_php_modules",
+	   'php_opt_mods_func' => "script_${name}_php_optional_modules",
+	   'php_fullver_func' => "script_${name}_php_fullver",
+	   'php_maxver_func' => "script_${name}_php_maxver",
+	   'mysql_fullver_func' => "script_${name}_mysql_fullver",
+	   'pear_mods_func' => "script_${name}_pear_modules",
+	   'perl_mods_func' => "script_${name}_perl_modules",
+	   'perl_opt_mods_func' => "script_${name}_opt_perl_modules",
+	   'python_fullver_func' => "script_${name}_python_fullver",
+	   'python_maxver_func' => "script_${name}_python_maxver",
+	   'python_mods_func' => "script_${name}_python_modules",
+	   'python_opt_mods_func' => "script_${name}_opt_python_modules",
+	   'gem_version_func' => "script_${name}_gem_version",
+	   'gems_func' => "script_${name}_gems",
+	   'latest_func' => "script_${name}_latest",
+	   'check_latest_func' => "script_${name}_check_latest",
+	   'commands_func' => "script_${name}_commands",
+	   'packages_func' => "script_${name}_packages",
+	   'passmode_func' => "script_${name}_passmode",
+	   'gpl_func' => "script_${name}_gpl",
+	   'avail' => $avail && !$disabled || $allowmaster,
+	   'avail_only' => $avail_only,
+	   'enabled' => !$disabled,
+	   'nocheck' => $disabled == 2,
+	   'minversion' => $unavail{$name."_minversion"},
+	   'abandoned_func' => "script_${name}_abandoned",
+	   'migrated_func' => "script_${name}_migrated",
+	   'testable_func' => "script_${name}_testable",
+	   'testpath_func' => "script_${name}_testpath",
+	   'testinstallpath_func' => "script_${name}_testinstallpath",
+	   'testargs_func' => "script_${name}_testargs",
+	   'kit_func' => "script_${name}_kit",
+	   'kit_func_desc' => "script_${name}_kit_desc",
+	   'kit_login_func' => "script_${name}_kit_login",
+	   'kit_apply_func' => "script_${name}_kit_apply",
+	   'detect_func' => "script_${name}_detect",
+	   'detect_file_func' => "script_${name}_detect_file",
+	 };
 if (defined(&$catfunc)) {
 	my @cats = &$catfunc();
 	$rv->{'category'} = $cats[0];
