@@ -15973,7 +15973,13 @@ if ($lastconfig) {
 			my @lost = grep { $_->{$f} } @doms;
 			return &text('check_lostfeature',
 				$text{'feature_'.$f},
-				join(", ", map { &show_domain_name($_) } @lost))
+				join(", ", map {
+					my $prog = &can_config_domain($_)
+						? "edit_domain.cgi"
+						: "view_domain.cgi";
+					"<a href='$prog?dom=$_->{'id'}'>".
+						&show_domain_name($_)."</a>";
+					} @lost))
 				if (@lost);
 			}
 		}
@@ -15982,7 +15988,13 @@ if ($lastconfig) {
 			my @lost = grep { $_->{$f} } @doms;
 			return &text('check_lostplugin',
 				&feature_name($f),
-				join(", ", map { &show_domain_name($_) } @lost))
+				join(", ", map {
+					my $prog = &can_config_domain($_)
+						? "edit_domain.cgi"
+						: "view_domain.cgi";
+					"<a href='$prog?dom=$_->{'id'}'>".
+						&show_domain_name($_)."</a>";
+					} @lost))
 				if (@lost);
 			}
 		}
