@@ -13769,6 +13769,7 @@ if (!&master_admin() && !&reseller_admin()) {
 			my $mod = $1;
 			if (&foreign_available($mod)) {
 				local %minfo = &get_module_info($mod);
+				next if ($minfo{'plugin_feature'});
 				push(@ot, { 'mod' => $mod,
 					    'page' => 'index.cgi',
 					    'title' => $minfo{'desc'},
