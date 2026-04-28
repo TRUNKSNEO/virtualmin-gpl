@@ -9071,7 +9071,13 @@ foreach my $dd (@alldoms) {
 
 # Delete any jail
 if (!&check_jailkit_support() && !$d->{'parent'}) {
-	&disable_domain_jailkit($d, 1);
+	my $err = &disable_domain_jailkit($d, 1);
+	if ($err) {
+		foreach my $dd (reverse(@alldoms)) {
+			&unlock_domain($dd);
+			}
+		return &text('delete_ejail', $err);
+		}
 	}
 
 # Go ahead and delete this domain and all sub-domains ..

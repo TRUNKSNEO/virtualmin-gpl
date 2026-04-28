@@ -110,6 +110,9 @@ if (!&check_jailkit_support()) {
 
 		# Clean all previously copied files
 		my $dom_chdir = &domain_jailkit_dir($d);
+		my $jail_clean_err = &unmount_jailkit_mounts($dom_chdir);
+		&error(&text('limits_ejailclean', $jail_clean_err))
+			if ($jail_clean_err);
 		if (-d $dom_chdir && $dom_chdir =~ /^\/.*?([\d]{6,})$/ &&
 		    $1 eq $d->{'id'}) {
 			opendir(my $dh, $dom_chdir) ||

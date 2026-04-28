@@ -1469,6 +1469,7 @@ delete_remoteuser=.. preserving user on remote system $1
 delete_home=Deleting home directory ..
 delete_homepreserve=.. preserving directory mounted from $1
 delete_ehome=.. rm command failed : $1
+delete_ejail=Failed to remove chroot jail : $1
 delete_webalizer=Deleting scheduled Webalizer reporting ..
 delete_webalizerno=.. failed to find web log
 delete_emaking=Before deletion command failed : $1
@@ -8309,6 +8310,7 @@ jailkit_euser=Domain user $1 does not exist!
 jailkit_eparent=Jails can only be enabled for top-level virtual servers
 jailkit_emkdir=Failed to create directory : $1
 jailkit_eumount=Failed to unmount bind home directory : $1
+jailkit_eumount2=Failed to unmount $1 under chroot jail : $2
 jailkit_eenabled=Chroot jail is not enabled for this domain
 jailkit_edir=No chroot jail directory found!
 

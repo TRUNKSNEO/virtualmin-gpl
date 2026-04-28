@@ -136,6 +136,38 @@ else {
 return undef;
 }
 
+# unmount_jailkit_mounts(directory)
+# Unmount all filesystems mounted at or under a jail directory, which prevents
+# recursive jail cleanup from crossing into bind-mounted host directories
+sub unmount_jailkit_mounts
+{
+my ($dir) = @_;
+return undef if (!$dir || !-d $dir);
+return undef if (!$config{'jailkit_root'} ||
+		 !&is_under_directory($config{'jailkit_root'}, $dir));
+&foreign_require("mount");
+my $sdir = &simplify_path($dir);
+return undef if (!$sdir);
+undef(@mount::list_mounted_cache);
+my @mounted = sort { length($b->[0]) <=> length($a->[0]) }
+	      grep { $_->[0] =~ /^\// &&
+		     ($_->[0] eq $sdir || &is_under_directory($sdir, $_->[0])) }
+	      &mount::list_mounted();
+return undef if (!@mounted);
+my @locks = &mount::files_to_lock();
+foreach my $f (@locks) { &lock_file($f); }
+my $err;
+foreach my $m (@mounted) {
+	$err = &mount::unmount_dir($m->[0], $m->[1], $m->[2], $m->[3], 1);
+	if ($err) {
+		$err = &text('jailkit_eumount2', "<tt>$m->[0]</tt>", $err);
+		last;
+		}
+	}
+foreach my $f (@locks) { &unlock_file($f); }
+return $err;
+}
+
 # disable_domain_jailkit(&domain, [deleting-domain])
 # Return a domain to regular non-chroot mode
 sub disable_domain_jailkit
@@ -170,25 +202,20 @@ foreach my $uinfo (&list_all_domains_users($d, 0, 0, 1, 1, 0)) {
 		}
 	}
 
-# Remove the BIND mount
-&foreign_require("mount");
+# Remove any active mounts under the jail before recursively deleting
+# or cleaning it.
 my $jailhome = $dir.$d->{'home'};
-foreach $f (&mount::files_to_lock()) { &lock_file($f); }
-my @mounted = &mount::list_mounted();
-my ($mounted) = grep { $_->[0] eq $jailhome } @mounted;
-if ($mounted) {
-	my $err = &mount::unmount_dir(
-		$mounted->[0], $mounted->[1], $mounted->[2], undef, 1);
-	if ($err) {
-		return &text('jailkit_eumount', $err);
-		}
-	}
-foreach $f (&mount::files_to_lock()) { &unlock_file($f); }
+my $err = &unmount_jailkit_mounts($dir);
+return $err if ($err);
+
+# Remove the fstab entry for Virtualmin's own home bind mount
+&foreign_require("mount");
+undef(@mount::list_mounts_cache);
 my @mounts = &mount::list_mounts();
 my ($mount) = grep { $_->[0] eq $jailhome } @mounts;
 if ($mount) {
 	my $idx = &indexof($mount, @mounts);
-	if ($idx > 0) {
+	if ($idx >= 0) {
 		&mount::delete_mount($idx);
 		}
 	}
