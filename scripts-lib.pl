@@ -183,6 +183,7 @@ my $rv = { 'name' => $name,
 	   'depends_func' => "script_${name}_depends",
 	   'dbs_func' => "script_${name}_dbs",
 	   'db_conn_desc_func' => "script_${name}_db_conn_desc",
+	   'db_conn_update_func' => "script_${name}_db_conn_update",
 	   'params_func' => "script_${name}_params",
 	   'parse_func' => "script_${name}_parse",
 	   'check_func' => "script_${name}_check",
@@ -849,7 +850,7 @@ if ($wapp_conf_type_curr) {
 		}
 
 	# Run substitution if target and replacement are fine
-	my ($error, $success);
+	my ($error, $success, $changed);
 
 	# Config file to run replacements on
 	my $wapp_conf_file_path = "$sdir/$wapp_conf_file";
@@ -907,6 +908,7 @@ if ($wapp_conf_type_curr) {
 			}
 		&make_file_writable_as_domain_user($d, $wapp_conf_file_path);
 		&flush_file_lines_as_domain_user($d, $wapp_conf_file_path);
+		$changed = $success ? 1 : 0;
 		if ($success) {
 			$success = $text{'setup_done'};
 			$success = 
@@ -924,7 +926,9 @@ if ($wapp_conf_type_curr) {
 		}
 	&$first_print($error || $success);
 	&$outdent_print() if(${$wapp_conf_file_cnt_ref} == $wapp_conf_files_cnt);
+	return $changed;
 	}
+return 0;
 };
 
 my ($printed_type, @printed_name);
@@ -933,6 +937,7 @@ foreach my $script (@domain_scripts) {
 	my $sdata = &get_script($sname);
 	my $sproject = $script->{'opts'}->{'project'};
 	my $db_conn_func = $sdata->{'db_conn_desc_func'};
+	my $db_conn_update_func = $sdata->{'db_conn_update_func'};
 	my ($sdbtype) = split(/_/, $script->{'opts'}->{'db'}, 2);
 	my $sdir = $script->{'opts'}->{'dir'};
 	my ($dhome, $olddhome) = ($d->{'home'}, $oldd->{'home'});
@@ -950,19 +955,26 @@ foreach my $script (@domain_scripts) {
 			my $wapp_conf_files_cnt =
 				scalar(@wapp_conf_files);
 			my $wapp_conf_file_count;
+			my $updated;
 			foreach my $wapp_conf_file (@wapp_conf_files) {
 				my $wapp_conf_types =
 					$db_conn_desc->{$wapp_conf_file};
 				if (ref($wapp_conf_types)) {
-					$do_wapp_conf_file->(
+					$updated = $do_wapp_conf_file->(
 						$wapp_conf_file,
 						$wapp_conf_types,
 						$sdata, $sproject, $d, $sdir,
 						$type, $value,
 						$wapp_conf_files_cnt,
 						\$wapp_conf_file_count,
-						$script);
+						$script) || $updated;
 					}
+				}
+			if ($updated && defined(&$db_conn_update_func)) {
+				my $err = &$db_conn_update_func(
+					$d, $script->{'opts'}, $type,
+					$value, $dbtype);
+				&$first_print($err) if ($err);
 				}
 			}
 		}
