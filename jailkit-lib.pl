@@ -101,7 +101,8 @@ if ($config{'mysql'}) {
 	my $cnf = &mysql::get_mysql_config();
 	my $socket;
 	if ($cnf) {
-		my ($mysqld) = grep { $_->{'name'} eq 'mysqld' } @$cnf;
+		my ($mysqld) = grep { $_->{'name'} eq 'mysqld' ||
+				      $_->{'name'} eq 'mariadbd' } @$cnf;
 		if ($mysqld) {
 			$socket = &mysql::find_value("socket", $mysqld->{'members'});
 			}

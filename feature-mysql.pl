@@ -1809,7 +1809,8 @@ return undef if ($myconfig{'host'} &&
 			&to_ipaddress(&get_system_hostname()));
 my $mysql_dir;
 my $conf = &foreign_call($mymod, "get_mysql_config");
-my ($mysqld) = grep { $_->{'name'} eq 'mysqld' } @$conf;
+my ($mysqld) = grep { $_->{'name'} eq 'mysqld' ||
+		      $_->{'name'} eq 'mariadbd' } @$conf;
 my $dir;
 if ($mysqld) {
 	$dir = &foreign_call($mymod, "find_value",

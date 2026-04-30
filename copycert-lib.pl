@@ -65,6 +65,25 @@ foreach my $rv (@rv) {
 return @rv;
 }
 
+# find_mysql_ssl_config_section(&conf)
+# Returns the daemon-specific MySQL/MariaDB section to use for SSL settings
+sub find_mysql_ssl_config_section
+{
+my ($conf) = @_;
+my @sects;
+foreach my $name ("mysqld", "mariadbd") {
+	push(@sects, grep { lc($_->{'name'}) eq $name } @$conf);
+	}
+# Modern MariaDB uses [mariadbd] but still reads the old [mysqld] group, so
+# keep existing SSL settings in their current daemon section to avoid duplicates
+foreach my $sect (@sects) {
+	foreach my $m (@{$sect->{'members'}}) {
+		return $sect if ($m->{'name'} =~ /^ssl_(cert|key|ca)$/i);
+		}
+	}
+return $sects[0];
+}
+
 # get_all_service_ssl_certs(&domain, include-per-ip-certs)
 # Returns a list of all SSL certs used by global services like Postfix
 sub get_all_service_ssl_certs
@@ -292,7 +311,7 @@ if ($config{'mysql'}) {
 	# Check MySQL certificate
 	&foreign_require("mysql");
 	my $conf = &mysql::get_mysql_config();
-	my ($mysqld) = grep { $_->{'name'} eq 'mysqld' } @$conf;
+	my $mysqld = &find_mysql_ssl_config_section($conf);
 	my ($cert, $key, $ca);
 	if ($mysqld) {
 		my $mems = $mysqld->{'members'};
@@ -869,7 +888,7 @@ my ($d) = @_;
 &foreign_require("mysql");
 &$first_print($text{'copycert_mysql'});
 my $conf = &mysql::get_mysql_config();
-my ($mysqld) = grep { $_->{'name'} eq 'mysqld' } @$conf;
+my $mysqld = &find_mysql_ssl_config_section($conf);
 if (!$mysqld) {
 	&$second_print($text{'copycert_emysqld'});
 	return;
