@@ -2996,30 +2996,26 @@ foreach my $p (@pkgs) {
 		next;
 		}
 
-	# Install it
-	if ($first_print eq \&null_print) {
-		# Suppress output
-		&capture_function_output(
-		    \&software::update_system_install, $p);
-		}
-	elsif ($first_print eq \&first_text_print) {
-		# Make output text
-		my $out = &capture_function_output(
-		    \&software::update_system_install, $p);
-		print &html_tags_to_text($out);
-		}
-	else {
-		# Show HTML output
-		&software::update_system_install($p);
-		}
+	# Install it, but only show the verbose package manager output
+	# if the install fails; package output can be large, so capture
+	# through a tempfile instead
+	my ($out, $rs) = &capture_function_output_tempfile(
+		\&software::update_system_install, $p);
 
 	# Did it work?
 	my @pinfo = &software::package_info($p);
-	if (@pinfo && $pinfo[0] eq $p) {
+	# Some package managers accept aliases and return the real packages
+	# installed, like apt installing python3-pip for "pip"
+	if ((@pinfo && $pinfo[0] eq $p) || scalar(@$rs)) {
 		&$second_print($text{'setup_done'});
 		$count++;
 		}
 	else {
+		if ($first_print ne \&null_print) {
+			my $eout = $first_print eq \&first_text_print ?
+				   &html_tags_to_text($out) : $out;
+			print $eout;
+			}
 		&$second_print($text{'scripts_failedpackage'});
 		}
 	}
