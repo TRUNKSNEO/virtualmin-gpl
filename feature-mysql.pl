@@ -9,7 +9,67 @@ if (!$mysql::config{'login'}) {
 	$mysql::authstr = &mysql::make_authstr();
 	}
 %mconfig = &foreign_config("mysql");
-$mysql_user_size = $config{'mysql_user_size'} || 16;
+$mysql_user_size = &get_mysql_user_size();
+}
+
+# get_mysql_user_size()
+# Returns the maximum MySQL user name length, cached by server version
+sub get_mysql_user_size
+{
+my $mapfile = "$module_config_directory/mysql-family-user-size-map";
+my %sizemap;
+my $have_map = &read_file($mapfile, \%sizemap);
+my $verkey;
+my $vererr;
+eval {
+	local $main::error_must_die = 1;
+	($verkey, undef, $vererr) = &get_dom_remote_mysql_version();
+	};
+my $evalerr = $@;
+&error_stderr("Failed to get MySQL/MariaDB version for user size map : ".
+	      ($evalerr || $vererr)) if ($evalerr || $vererr);
+$verkey = undef if ($evalerr || !defined($verkey) || $verkey eq "" ||
+		    $verkey eq "-1");
+my $size;
+my $known;
+if ($have_map && $verkey && $sizemap{$verkey} =~ /^\d+$/) {
+	$size = $sizemap{$verkey};
+	$known = 1;
+	}
+else {
+	$size = &detect_mysql_user_size();
+	if ($size) {
+		$known = 1;
+		if ($verkey) {
+			$sizemap{$verkey} = $size;
+			my $locked = &lock_file($mapfile);
+			&write_file($mapfile, \%sizemap, "=");
+			&unlock_file($mapfile) if ($locked);
+			}
+		}
+	}
+if ($known && $config{'mysql_user_size'} ne $size) {
+	my $locked = &lock_file($module_config_file);
+	$config{'mysql_user_size'} = $size;
+	&save_module_config();
+	&unlock_file($module_config_file) if ($locked);
+	}
+return $size || $config{'mysql_user_size'} || 32;
+}
+
+# detect_mysql_user_size()
+# Detects the maximum MySQL user name length from the mysql.user table
+sub detect_mysql_user_size
+{
+my $size;
+eval {
+	local $main::error_must_die = 1;
+	my @str = &mysql::table_structure($mysql::master_db, "user");
+	my ($ufield) = grep { lc($_->{'field'}) eq 'user' } @str;
+	$size = $ufield && $ufield->{'type'} =~ /\((\d+)\)/ ? $1 : undef;
+	};
+&error_stderr("Failed to detect MySQL/MariaDB user name length : $@") if ($@);
+return $size;
 }
 
 sub check_module_mysql

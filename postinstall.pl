@@ -19,6 +19,7 @@ if ($config{'web_aliasredir'} eq '') {
 	$config{'web_aliasredir'} = $config{'alias_mode'} == 0 ||
 				    $config{'alias_mode'} == 4 ? 1 : 0;
 	}
+delete($config{'mysql_user_size_auto'}); # clean up old dropped setting
 &save_module_config();
 
 # Convert all existing cron jobs to WebminCron, except existing backups
@@ -568,21 +569,6 @@ if (&has_home_quotas()) {
 		my @users = &list_domain_users($d, 1, 1, 0, 1);
 		&update_user_quota_cache($d, \@users, 0);
 		}
-	}
-
-# Try to determine the maximum MariaDB/MySQL username size
-if ($config{'mysql_user_size_auto'} != 1) {
-	&require_mysql();
-	eval {
-		local $main::error_must_die = 1;
-		my @str = &mysql::table_structure($mysql::master_db, "user");
-		my ($ufield) = grep { lc($_->{'field'}) eq 'user' } @str;
-		if ($ufield && $ufield->{'type'} =~ /\((\d+)\)/) {
-			$config{'mysql_user_size'} = $1;
-			}
-		};
-	$config{'mysql_user_size_auto'} = 1;
-	&save_module_config();
 	}
 
 # Fix old Rackspace cloud provider if URL has changed
