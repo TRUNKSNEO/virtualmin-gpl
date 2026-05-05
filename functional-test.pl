@@ -949,8 +949,7 @@ $jail_tests = [
 		      [ 'pass', 'smeg' ],
 		      [ 'desc', 'Test user' ],
 		      [ 'quota', 100*1024 ],
-		      [ 'shell', '/bin/sh' ],
-		      [ 'mail-quota', 100*1024 ] ],
+		      [ 'shell', '/bin/sh' ] ],
 	},
 
 	# Check that the domain owner Unix user is chroot'd
@@ -1078,8 +1077,7 @@ $disable_tests = [
 		      [ 'pass', 'smeg' ],
 		      [ 'desc', 'Test user' ],
 		      [ 'quota', 100*1024 ],
-		      [ 'ftp' ],
-		      [ 'mail-quota', 100*1024 ] ],
+		      [ 'ftp' ] ],
 	},
 
 	# Disable the whole domain
@@ -1252,8 +1250,7 @@ $mailbox_tests = [
 		      [ 'pass', 'smeg' ],
 		      [ 'desc', 'Test user' ],
 		      [ 'quota', 100*1024 ],
-		      [ 'ftp' ],
-		      [ 'mail-quota', 100*1024 ] ],
+		      [ 'ftp' ] ],
 	},
 
 	# Make sure the mailbox exists
@@ -1396,8 +1393,7 @@ $sshuser_tests = [
 		      [ 'desc', 'Test user' ],
 		      [ 'quota', 100*1024 ],
 		      [ 'shell', '/bin/sh' ],
-		      [ 'ssh-pubkey', $test_ssh_public_key ],
-		      [ 'mail-quota', 100*1024 ] ],
+		      [ 'ssh-pubkey', $test_ssh_public_key ] ],
 	},
 
 	# Make sure we can SSH as that user
@@ -1418,8 +1414,7 @@ $sshuser_tests = [
 		      [ 'pass', 'smeg' ],
 		      [ 'desc', 'Test user' ],
 		      [ 'quota', 100*1024 ],
-		      [ 'shell', '/bin/sh' ],
-		      [ 'mail-quota', 100*1024 ] ],
+		      [ 'shell', '/bin/sh' ] ],
 	},
 
 	# SSH should now fail
@@ -2241,8 +2236,7 @@ $database_tests = [
 		      [ 'pass', 'smeg' ],
 		      [ 'desc', 'Test user' ],
 		      [ 'quota', 100*1024 ],
-		      [ 'mysql', $test_domain_db ],
-		      [ 'mail-quota', 100*1024 ] ],
+		      [ 'mysql', $test_domain_db ] ],
 	},
 
 	# Verify that mailbox user exists and has DB access
@@ -2554,8 +2548,7 @@ $move_tests = [
 		      [ 'user', $test_user ],
 		      [ 'pass', 'smeg' ],
 		      [ 'desc', 'Test user' ],
-		      [ 'quota', 100*1024 ],
-		      [ 'mail-quota', 100*1024 ] ],
+		      [ 'quota', 100*1024 ] ],
 	},
 
 	# Add an FTP user to the domain being moved
@@ -2935,8 +2928,7 @@ $aliasdom_tests = [
 		      [ 'user', $test_user ],
 		      [ 'pass', 'smeg' ],
 		      [ 'desc', 'Test user' ],
-		      [ 'quota', 100*1024 ],
-		      [ 'mail-quota', 100*1024 ] ],
+		      [ 'quota', 100*1024 ] ],
 	},
 
 	# Test SMTP to him in the alias domain
@@ -3188,8 +3180,7 @@ $scheduled_tests = [
 		      [ 'user', $test_user ],
 		      [ 'pass', 'smeg' ],
 		      [ 'desc', 'Test user' ],
-		      [ 'quota', 777*1024 ],
-		      [ 'mail-quota', 777*1024 ] ],
+		      [ 'quota', 777*1024 ] ],
 	},
 
 	# Add an extra database
@@ -3334,8 +3325,7 @@ $backup_tests = [
 		      [ 'user', $test_user ],
 		      [ 'pass', 'smeg' ],
 		      [ 'desc', 'Test user' ],
-		      [ 'quota', 777*1024 ],
-		      [ 'mail-quota', 777*1024 ] ],
+		      [ 'quota', 777*1024 ] ],
 	},
 
 	# Add an extra database
@@ -3548,8 +3538,7 @@ $mysqlbackup_tests = [
 		      [ 'desc', 'Test user' ],
 		      [ 'quota', 100*1024 ],
 		      [ 'mysql', $test_domain_db ],
-		      [ 'mysql', $test_domain_db.'_extra' ],
-		      [ 'mail-quota', 100*1024 ] ],
+		      [ 'mysql', $test_domain_db.'_extra' ] ],
 	},
 
 	# Backup to a temp file
@@ -3876,8 +3865,7 @@ $multibackup_tests = [
 		      [ 'user', $test_user ],
 		      [ 'pass', 'smeg' ],
 		      [ 'desc', 'Test user' ],
-		      [ 'quota', 777*1024 ],
-		      [ 'mail-quota', 777*1024 ] ],
+		      [ 'quota', 777*1024 ] ],
 	},
 
 	# Add an extra database
@@ -5295,8 +5283,7 @@ $splitbackup_tests = [
 		      [ 'user', $test_user ],
 		      [ 'pass', 'smeg' ],
 		      [ 'desc', 'Test user' ],
-		      [ 'quota', 777*1024 ],
-		      [ 'mail-quota', 777*1024 ] ],
+		      [ 'quota', 777*1024 ] ],
 	},
 
 	# Add an extra database
@@ -5765,7 +5752,6 @@ $mail_tests = [
 		      [ 'desc', 'Test user' ],
 		      [ 'quota', 100*1024 ],
 		      [ 'ftp' ],
-		      [ 'mail-quota', 100*1024 ],
 		      [ 'no-creation-mail' ] ],
 	},
 
@@ -6163,7 +6149,6 @@ $aliasmail_tests = [
 		      [ 'desc', 'Test user' ],
 		      [ 'quota', 100*1024 ],
 		      [ 'ftp' ],
-		      [ 'mail-quota', 100*1024 ],
 		      [ 'no-creation-mail' ] ],
 	},
 
@@ -6570,7 +6555,7 @@ $webmin_tests = [
 
 	# Add a user to the domain
 	{ 'command' => $webmin_wget_command.
-                       "${webmin_proto}://localhost:${webmin_port}/virtual-server/save_user.cgi?dom=\$DOMAIN_ID\\&new=1\\&mailuser=bob\\&real=Bob+Smeg\\&mailpass=smeg\\&quota_def=1\\&mquota_def=1\\&home_def=1\\&mailbox=1\\&tome=1\\&newmail_def=1\\&shell=/dev/null\\&recovery_def=1",
+                       "${webmin_proto}://localhost:${webmin_port}/virtual-server/save_user.cgi?dom=\$DOMAIN_ID\\&new=1\\&mailuser=bob\\&real=Bob+Smeg\\&mailpass=smeg\\&quota_def=1\\&home_def=1\\&mailbox=1\\&tome=1\\&newmail_def=1\\&shell=/dev/null\\&recovery_def=1",
 	  'antigrep' => 'Failed to save user',
 	},
 
@@ -6588,7 +6573,7 @@ $webmin_tests = [
 
 	# Modify the user to enable forwarding
 	{ 'command' => $webmin_wget_command.
-                       "${webmin_proto}://localhost:${webmin_port}/virtual-server/save_user.cgi?dom=\$DOMAIN_ID\\&old=bob\\&unix=1\\&mailuser=bob\\&oldpop3=bob\\&real=Bob+Smeg\\&mailpass_def=1\\&quota_def=1\\&mquota_def=1\\&home_def=1\\&mailbox=1\\&forward=1\\&forwardto=nobody\@virtualmin.com\\&shell=/dev/null\\&remail_def=1\\&simplemode=simple\\&recovery_def=1",
+                       "${webmin_proto}://localhost:${webmin_port}/virtual-server/save_user.cgi?dom=\$DOMAIN_ID\\&old=bob\\&unix=1\\&mailuser=bob\\&oldpop3=bob\\&real=Bob+Smeg\\&mailpass_def=1\\&quota_def=1\\&home_def=1\\&mailbox=1\\&forward=1\\&forwardto=nobody\@virtualmin.com\\&shell=/dev/null\\&remail_def=1\\&simplemode=simple\\&recovery_def=1",
 	  'antigrep' => 'Failed to save user',
 	},
 
@@ -6856,7 +6841,7 @@ $owner_tests = [
 
 	# Add a user to the domain
 	{ 'command' => $owner_webmin_wget_command.
-                       "${webmin_proto}://localhost:${webmin_port}/virtual-server/save_user.cgi?dom=\$DOMAIN_ID\\&new=1\\&mailuser=bob\\&real=Bob+Smeg\\&mailpass=smeg\\&quota_def=1\\&mquota_def=1\\&home_def=1\\&mailbox=1\\&tome=1\\&newmail_def=1\\&shell=/dev/null\\&recovery_def=1",
+                       "${webmin_proto}://localhost:${webmin_port}/virtual-server/save_user.cgi?dom=\$DOMAIN_ID\\&new=1\\&mailuser=bob\\&real=Bob+Smeg\\&mailpass=smeg\\&quota_def=1\\&home_def=1\\&mailbox=1\\&tome=1\\&newmail_def=1\\&shell=/dev/null\\&recovery_def=1",
 	  'antigrep' => 'Failed to save user',
 	},
 
@@ -6874,7 +6859,7 @@ $owner_tests = [
 
 	# Modify the user to enable forwarding
 	{ 'command' => $owner_webmin_wget_command.
-                       "${webmin_proto}://localhost:${webmin_port}/virtual-server/save_user.cgi?dom=\$DOMAIN_ID\\&old=bob\\&unix=1\\&mailuser=bob\\&oldpop3=bob\\&real=Bob+Smeg\\&mailpass_def=1\\&quota_def=1\\&mquota_def=1\\&home_def=1\\&mailbox=1\\&forward=1\\&forwardto=nobody\@$test_domain\\&shell=/dev/null\\&remail_def=1\\&simplemode=simple\\&recovery_def=1",
+                       "${webmin_proto}://localhost:${webmin_port}/virtual-server/save_user.cgi?dom=\$DOMAIN_ID\\&old=bob\\&unix=1\\&mailuser=bob\\&oldpop3=bob\\&real=Bob+Smeg\\&mailpass_def=1\\&quota_def=1\\&home_def=1\\&mailbox=1\\&forward=1\\&forwardto=nobody\@$test_domain\\&shell=/dev/null\\&remail_def=1\\&simplemode=simple\\&recovery_def=1",
 	  'antigrep' => 'Failed to save user',
 	},
 
@@ -9118,8 +9103,7 @@ $webrename_tests = [
 		      [ 'pass', 'smeg' ],
 		      [ 'desc', 'Test user' ],
 		      [ 'quota', 100*1024 ],
-		      [ 'ftp' ],
-		      [ 'mail-quota', 100*1024 ] ],
+		      [ 'ftp' ] ],
 	},
 
 	# Create an alias
@@ -9255,8 +9239,7 @@ $rename_tests = [
 		      [ 'pass', 'smeg' ],
 		      [ 'desc', 'Test user' ],
 		      [ 'quota', 100*1024 ],
-		      [ 'ftp' ],
-		      [ 'mail-quota', 100*1024 ] ],
+		      [ 'ftp' ] ],
 	},
 
 	# Create an alias
@@ -9502,8 +9485,7 @@ $bw_tests = [
 		      [ 'pass', 'smeg' ],
 		      [ 'desc', 'Test user' ],
 		      [ 'quota', 100*1024 ],
-		      [ 'ftp' ],
-		      [ 'mail-quota', 100*1024 ] ],
+		      [ 'ftp' ] ],
 	},
 
 	# Send a 1M email to it
@@ -9683,8 +9665,7 @@ $quota_tests = [
 		      [ 'user', $test_user ],
 		      [ 'pass', 'smeg' ],
 		      [ 'desc', 'Test user' ],
-		      [ 'quota', 5*$blocks_per_mb ],
-		      [ 'mail-quota', 5*$blocks_per_mb ] ],
+		      [ 'quota', 5*$blocks_per_mb ] ],
 	},
 
 	# Make sure 20M file creation fails
@@ -9813,8 +9794,7 @@ $overlap_tests = [
 		      [ 'pass', 'smeg' ],
 		      [ 'desc', 'Test user A' ],
 		      [ 'quota', 100*1024 ],
-		      [ 'ftp' ],
-		      [ 'mail-quota', 100*1024 ] ],
+		      [ 'ftp' ] ],
 	},
 
 	# Create alias A in first domain
@@ -9841,8 +9821,7 @@ $overlap_tests = [
 		      [ 'pass', 'smeg' ],
 		      [ 'desc', 'Test user A' ],
 		      [ 'quota', 100*1024 ],
-		      [ 'ftp' ],
-		      [ 'mail-quota', 100*1024 ] ],
+		      [ 'ftp' ] ],
 	},
 
 	# Create alias A in second domain
@@ -9860,8 +9839,7 @@ $overlap_tests = [
 		      [ 'pass', 'smeg' ],
 		      [ 'desc', 'Test user B' ],
 		      [ 'quota', 100*1024 ],
-		      [ 'ftp' ],
-		      [ 'mail-quota', 100*1024 ] ],
+		      [ 'ftp' ] ],
 	},
 
 	# Create alias B in first domain
@@ -9879,8 +9857,7 @@ $overlap_tests = [
 		      [ 'pass', 'smeg' ],
 		      [ 'desc', 'Test user B' ],
 		      [ 'quota', 100*1024 ],
-		      [ 'ftp' ],
-		      [ 'mail-quota', 100*1024 ] ],
+		      [ 'ftp' ] ],
 	},
 
 	# Create alias B in second domain
@@ -10580,8 +10557,7 @@ $clone_tests = [
 		      [ 'extra', 'bob@'.$test_domain ],
 		      [ 'extra', 'fred@'.$test_domain ],
 		      [ 'mysql', $test_domain_db ],
-		      [ 'mysql', $test_domain_db.'_extra' ],
-		      [ 'mail-quota', 100*1024 ] ],
+		      [ 'mysql', $test_domain_db.'_extra' ] ],
 	},
 	{ 'command' => 'modify-user.pl',
 	  'args' => [ [ 'domain', $test_domain ],
@@ -10869,8 +10845,7 @@ $clonesub_tests = [
 		      [ 'extra', 'bob@'.$test_subdomain ],
 		      [ 'extra', 'fred@'.$test_subdomain ],
 		      [ 'mysql', 'example2' ],
-		      [ 'mysql', 'example2_extra' ],
-		      [ 'mail-quota', 100*1024 ] ],
+		      [ 'mysql', 'example2_extra' ] ],
 	},
 	{ 'command' => 'modify-user.pl',
 	  'args' => [ [ 'domain', $test_subdomain ],
@@ -11113,7 +11088,6 @@ $hashpass_tests = [
 		      [ 'desc', 'Test user' ],
 		      [ 'quota', 100*1024 ],
 		      [ 'ftp' ],
-		      [ 'mail-quota', 100*1024 ],
 		      [ 'mysql', $test_domain_user ] ],
 	},
 
@@ -11192,8 +11166,7 @@ $hashpass_tests = [
 		      [ 'pass', 'smeg' ],
 		      [ 'desc', 'Test user' ],
 		      [ 'quota', 100*1024 ],
-		      [ 'ftp' ],
-		      [ 'mail-quota', 100*1024 ] ],
+		      [ 'ftp' ] ],
 	},
 
 	# Make sure the mailbox exists
@@ -12850,8 +12823,7 @@ $transfer_tests = [
 		      [ 'user', $test_user ],
 		      [ 'pass', 'smeg' ],
 		      [ 'desc', 'Test user' ],
-		      [ 'quota', 777*1024 ],
-		      [ 'mail-quota', 777*1024 ] ],
+		      [ 'quota', 777*1024 ] ],
 	},
 
 	# Add an extra database
@@ -13026,8 +12998,7 @@ $xml_tests = [
 		      [ 'user', $test_user ],
 		      [ 'pass', 'smeg' ],
 		      [ 'desc', 'Test user' ],
-		      [ 'quota', 777*1024 ],
-		      [ 'mail-quota', 777*1024 ] ],
+		      [ 'quota', 777*1024 ] ],
 	},
 
 	# Add an extra database to list

@@ -150,10 +150,6 @@ while(@ARGV > 0) {
 		$quota = shift(@ARGV);
 		$quota = 0 if ($quota eq "UNLIMITED");
 		}
-	elsif ($a eq "--mail-quota") {
-		$mquota = shift(@ARGV);
-		$mquota = 0 if ($mquota eq "UNLIMITED");
-		}
 	elsif ($a eq "--mysql") {
 		$db = shift(@ARGV);
 		push(@dbs, { 'type' => 'mysql', 'name' => $db });
@@ -221,9 +217,6 @@ $username = &remove_userdom($username, $d);
 if (!$user->{'noquota'}) {
 	if (&has_home_quotas() && defined($quota)) {
 		$quota =~ /^\d+$/ || &usage("Quota must be a number");
-		}
-	if (&has_mail_quotas() && defined($mquota)) {
-		$mquota =~ /^\d+$/ || &usage("Quota must be a number");
 		}
 	}
 $err = &valid_mailbox_name($username);
@@ -348,12 +341,6 @@ if (!$user->{'noquota'}) {
 			&usage("User's quota cannot be higher than domain's ".
 			       "quota of $pd->{'quota'}");
 		}
-	if (defined($mquota)) {
-		$user->{'mquota'} = $mquota;
-		!$mquota || !$pd->{'mquota'} || $mquota <= $pd->{'mquota'} ||
-			&usage("User's mail quota cannot be higher than ".
-			       "domain's mail quota of $pd->{'quota'}");
-		}
 	}
 $user->{'dbs'} = \@dbs if (@dbs);
 $user->{'secs'} = \@groups;
@@ -462,9 +449,6 @@ print "                       --passfile password-file\n";
 print "                      [--ssh-pubkey \"key\" | pubkey-file <--ssh-pubkey-id id]\n";
 if (&has_home_quotas()) {
 	print "                      [--quota quota-in-blocks|\"UNLIMITED\"]\n";
-	}
-if (&has_mail_quotas()) {
-	print "                      [--mail-quota quota-in-blocks|\"UNLIMITED\"]\n";
 	}
 print "                      [--real real-name-for-new-user]\n";
 if (&supports_firstname()) {

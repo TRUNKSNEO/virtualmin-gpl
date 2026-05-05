@@ -139,11 +139,6 @@ while(@ARGV > 0) {
 		&has_home_quotas() || &usage("--quota option is not available unless home directory quotas are enabled");
 		$quota eq "UNLIMITED" || $quota =~ /^\d+$/ || &usage("Home directory quota must be a number of blocks, or UNLIMITED");
 		}
-	elsif ($a eq "--mail-quota") {
-		$mquota = shift(@ARGV);
-		&has_mail_quotas() || &usage("--mail-quota option is not available unless mail directory quotas are enabled");
-		$mquota eq "UNLIMITED" || $mquota =~ /^\d+$/ || &usage("Mail directory quota must be a number of blocks, or UNLIMITED");
-		}
 	elsif ($a eq "--add-mysql") {
 		# Adding a MySQL DB to this user's allowed list
 		push(@adddbs, { 'type' => 'mysql',
@@ -307,7 +302,7 @@ if ($user->{'domainowner'}) {
 	defined($pass) &&
 	  &usage("The --pass and --passfile flags cannot be used when ".
 		 "editing a domain owner");
-	($quota || $mquota) &&
+	$quota &&
 	  &usage("Quotas cannot be changed when editing a domain owner");
 	(@adddbs || @deldbs) &&
 	  &usage("Databases cannot be changed when editing a domain owner");
@@ -347,13 +342,6 @@ if (defined($quota) && !$user->{'noquota'}) {
 	$quota eq "UNLIMITED" || !$pd->{'quota'} || $quota <= $pd->{'quota'} ||
 		&usage("User's quota cannot be higher than domain's ".
 		       "quota of $pd->{'quota'}");
-	}
-if (defined($mquota) && !$user->{'noquota'}) {
-	$user->{'mquota'} = $mquota eq "UNLIMITED" ? 0 : $mquota;
-	$mquota eq "UNLIMITED" || !$pd->{'mquota'} ||
-	    $mquota <= $pd->{'mquota'}||
-		&usage("User's mail quota cannot be higher than domain's ".
-		       "mail quota of $pd->{'quota'}");
 	}
 @domdbs = &domain_databases($d);
 @newdbs = @{$user->{'dbs'}};
@@ -635,9 +623,6 @@ if (&supports_firstname()) {
 	}
 if (&has_home_quotas()) {
 	print "                      [--quota quota-in-blocks]\n";
-	}
-if (&has_mail_quotas()) {
-	print "                      [--mail-quota quota-in-blocks]\n";
 	}
 if ($config{'mysql'}) {
 	print "                      [--add-mysql database]\n";

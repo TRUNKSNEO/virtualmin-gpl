@@ -10,16 +10,6 @@ print "$text{'newquotacheck_desc'}<p>\n";
 print &ui_form_start("quotacheck.cgi", "post");
 print &ui_table_start($text{'newquotacheck_header'}, undef, 2);
 
-# Filesystems to check
-if (&has_home_quotas()) {
-	print &ui_table_row($text{'newquotacheck_home'},
-			    &ui_yesno_radio("home", 1));
-	}
-if (&has_mail_quotas()) {
-	print &ui_table_row($text{'newquotacheck_mail'},
-			    &ui_yesno_radio("mail", 1));
-	}
-
 # Quota types of check
 if ($config{'group_quotas'}) {
 	print &ui_table_row($text{'newquotacheck_who'},

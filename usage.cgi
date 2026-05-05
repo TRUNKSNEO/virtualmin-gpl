@@ -21,7 +21,6 @@ foreach $sd ($d, @subs) {
 
 # Compute usage by users
 $homesize = &quota_bsize("home");
-$mailsize = &quota_bsize("mail");
 foreach $sd ($d, &get_domain_by("parent", $d->{'id'})) {
 	@users = &list_domain_users($sd, 0, 1, 0, 1);
 	foreach my $u (@users) {
@@ -32,8 +31,7 @@ foreach $sd ($d, &get_domain_by("parent", $d->{'id'})) {
 			($uusage, undef, undef, $ucount) = &mail_file_size($u);
 			}
 		elsif (&has_home_quotas()) {
-			$uusage = $u->{'uquota'}*$homesize +
-				  $u->{'umquota'}*$mailsize;
+			$uusage = $u->{'uquota'}*$homesize;
 			$ucount = $u->{'ufquota'} + $u->{'umfquota'};
 			}
 		else {
@@ -81,8 +79,8 @@ if (&has_home_quotas()) {
 			    &quota_show($d->{'quota'}));
 
 	# Quota used
-	($home, $mail, $db) = &get_domain_quota($d, 1);
-	$usage = $home*$homesize + $mail*$mailsize;
+	($home, undef, $db) = &get_domain_quota($d, 1);
+	$usage = $home*$homesize;
 	print &ui_table_row($text{'usage_susage'},
 			    &nice_size($usage));
 

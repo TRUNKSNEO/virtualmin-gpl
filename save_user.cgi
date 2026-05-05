@@ -241,25 +241,6 @@ else {
 				# Use default
 				$user->{'quota'} = $defmquota[0];
 				}
-			if (&has_mail_quotas() && $qedit) {
-				if ( $in{'mquota'} eq -1 ) {
-					$in{'mquota'} = $in{'othermquota'};
-					}
-				$in{'mquota_def'} ||
-				    $in{'mquota'} =~ /^[0-9\.]+$/ ||
-					&error($text{'user_equota'});
-				$user->{'mquota'} = $in{'mquota_def'} ? 0 :
-					&quota_parse("mquota", "mail");
-				!$user->{'mquota'} || !$pd->{'mquota'} ||
-				  $user->{'mquota'} <= $pd->{'mquota'} ||
-				  &error(&text('user_eovermquota',
-					&nice_size($pd->{'mquota'}*
-						   &quota_bsize("mail"))));
-				}
-			elsif (&has_mail_quotas() && $in{'new'}) {
-				# Use default
-				$user->{'mquota'} = $defmquota[0];
-				}
 			}
 
 		# Save list of allowed databases

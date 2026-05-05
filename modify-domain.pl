@@ -954,11 +954,6 @@ if (&has_home_quotas() && $applyquotas == 2) {
 			$u->{'quota'} = $u->{'quota_cache'};
 			$save = 1;
 			}
-		if (defined($u->{'mquota_cache'}) &&
-		    $u->{'mquota'} != $u->{'mquota_cache'}) {
-			$u->{'mquota'} = $u->{'mquota_cache'};
-			$save = 1;
-			}
 		if ($save) {
 			&modify_user($u, $oldu, $dom);
 			$fixed++;

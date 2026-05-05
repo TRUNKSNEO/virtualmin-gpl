@@ -544,7 +544,6 @@ foreach my $name (keys %$mailusers) {
 		local $q = $mailuser->{'mailbox-quota'} < 0 ? undef :
 				$mailuser->{'mailbox-quota'};
 		$uinfo->{'quota'} = $q / &quota_bsize("home");
-		$uinfo->{'mquota'} = $q / &quota_bsize("home");
 		}
 	# Add mail aliases
 	local $alias = $mailuser->{'preferences'}->{'alias'};

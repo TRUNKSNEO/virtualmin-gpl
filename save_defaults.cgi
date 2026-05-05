@@ -24,19 +24,6 @@ if (&has_home_quotas()) {
 		$user->{'quota'} = &quota_parse("quota", "home");
 		}
 	}
-if (&has_mail_quotas()) {
-	if ($in{'mquota_def'} == 1) {
-		$user->{'mquota'} = 0;
-		}
-	elsif ($in{'mquota_def'} == 2) {
-		$user->{'mquota'} = "none";
-		}
-	else {
-		$in{'mquota'} =~ /^[0-9\.]+$/ ||
-			&error($text{'defaults_emquota'});
-		$user->{'mquota'} = &quota_parse("mquota", "mail");
-		}
-	}
 
 # Save default shell
 if (&can_mailbox_ftp()) {

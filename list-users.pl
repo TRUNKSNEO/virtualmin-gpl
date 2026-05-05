@@ -103,7 +103,6 @@ foreach $d (@doms) {
 	if ($multiline) {
 		# Show attributes on separate lines
 		$home_bsize = &has_home_quotas() ? &quota_bsize("home") : 0;
-		$mail_bsize = &has_mail_quotas() ? &quota_bsize("mail") : 0;
 		foreach $u (@users) {
 			print "$u->{'user'}\n";
 			print "    User: " . &remove_userdom($u->{'user'}, $d),"\n";
@@ -166,23 +165,6 @@ foreach $d (@doms) {
 					      &quota_show($u->{'quota_cache'}, "home"),"\n";
 					print "    Home byte quota expected: ",
 					      ($u->{'quota_cache'} * $home_bsize),"\n";
-					}
-				}
-			if (&has_mail_quotas() && !$u->{'noquota'}) {
-				print "    Mail quota: ",
-				      &quota_show($u->{'mquota'}, "mail"),"\n";
-				print "    Mail quota used: ",
-				      &quota_show($u->{'umquota'}, "mail"),"\n";
-				print "    Mail byte quota: ",
-				      ($u->{'mquota'} * $mail_bsize),"\n";
-				print "    Mail byte quota used: ",
-				      ($u->{'umquota'} * $mail_bsize),"\n";
-				print "    Mail files used: ",
-				      $u->{'umfquota'},"\n";
-				if (defined($u->{'mquota_cache'}) &&
-				    $u->{'mquota_cache'} != $u->{'mquota'}) {
-					print "    Mail quota expected: ",
-					      &quota_show($u->{'mquota_cache'}, "mail"),"\n";
 					}
 				}
 			if ($mailsize) {

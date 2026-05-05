@@ -28,8 +28,6 @@ foreach $mu (@mass) {
 # Validate inputs
 !&has_home_quotas() || $in{'quota_def'} != 0 ||
     $in{'quota'} =~ /^[0-9\.]+$/ || &error($text{'user_equota'});
-!&has_mail_quotas() || $in{'mquota_def'} != 0 ||
-    $in{'mquota'} =~ /^[0-9\.]+$/ || &error($text{'user_emquota'});
 
 # Update each one
 &ui_print_unbuffered_header(&domain_in($d), $text{'mass_title'}, "");
@@ -74,33 +72,6 @@ foreach $user (@musers) {
 				}
 			&$second_print(&text('mass_setq',
 					&quota_show($user->{'quota'}, "home")));
-			}
-		}
-
-	# Mail file quota
-	if (&has_mail_quotas() && $in{'mquota_def'} != 2) {
-		&$first_print($text{'mass_setmquota'});
-		if ($user->{'domainowner'}) {
-			&$second_print($text{'mass_edomainowner'});
-			}
-		elsif ($user->{'noquota'}) {
-			&$second_print($text{'mass_enoquota'});
-			}
-		elsif ($in{'mquota_def'} == 1) {
-			if ($user->{'mquota'}) {
-				$user->{'mquota'} = 0;
-				$changed++;
-				}
-			&$second_print($text{'mass_setu'});
-			}
-		elsif ($in{'mquota_def'} == 0) {
-			$nq = &quota_parse("mquota", "mail");
-			if ($nq != $user->{'mquota'}) {
-				$user->{'mquota'} = $nq;
-				$changed++;
-				}
-			&$second_print(&text('mass_setq',
-					&quota_show($user->{'mquota'},"mail")));
 			}
 		}
 

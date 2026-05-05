@@ -298,7 +298,6 @@ if ($multiline) {
 		}
 	if ($multiline == 1) {
 		$hs = &quota_bsize("home");
-		$ms = &quota_bsize("mail");
 		$sender_bcc = &get_all_domains_sender_bcc();
 		$recipient_bcc = &get_all_domains_recipient_bcc();
 		}
@@ -476,11 +475,11 @@ if ($multiline) {
 			if ($multiline == 1) {
 				($qhome, $qmail) = &get_domain_quota($d);
 				print "    Server quota used: ",
-				      &nice_size($qhome*$hs + $qmail*$ms),"\n";
+				      &nice_size($qhome*$hs),"\n";
 				print "    Server block quota used: ",
 				      ($qhome + $qmail),"\n";
 				print "    Server byte quota used: ",
-				      ($qhome*$hs + $qmail*$ms),"\n";
+				      ($qhome*$hs),"\n";
 				}
 			print "    User quota: ",
 			      &quota_show($d->{'uquota'}, "home"),"\n";
@@ -488,14 +487,11 @@ if ($multiline) {
 			      ($d->{'uquota'} || "Unlimited"),"\n";
 			if ($multiline == 1) {
 				print "    User quota used: ",
-				      &nice_size($duser->{'uquota'}*$hs +
-						 $duser->{'umquota'}*$ms),"\n";
+				      &nice_size($duser->{'uquota'}*$hs),"\n";
 				print "    User block quota used: ",
-				      ($duser->{'uquota'} +
-				       $duser->{'umquota'}),"\n";
+				      ($duser->{'uquota'}),"\n";
 				print "    User byte quota used: ",
-				      ($duser->{'uquota'}*$hs +
-				       $duser->{'umquota'}*$ms),"\n";
+				      ($duser->{'uquota'}*$hs),"\n";
 				}
 			}
 		if ($multiline == 1) {

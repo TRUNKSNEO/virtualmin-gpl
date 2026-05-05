@@ -113,25 +113,14 @@ if ($user_type eq 'ssh') {
 			$text{'user_header2'}, "width=100%", 2, "table2", 1);
 		}
 
-	if ($showquota) {
+	if ($showquota && &has_home_quotas()) {
 		# Show quotas field(s)
-		if (&has_home_quotas()) {
-			print &ui_table_row(
-				&hlink($qsame ? $text{'user_umquota'}
-					: $text{'user_uquota'}, "diskquota"),
-				&quota_field("quota", $user->{'quota'},
-				$user->{'uquota'}, $user->{'ufquota'},
-				"home", $user),
-				2, \@tds);
-			}
-		if (&has_mail_quotas()) {
-			print &ui_table_row(
-				&hlink($text{'user_mquota'}, "diskmquota"),
-				&quota_field("mquota", $user->{'mquota'},
-					$user->{'umquota'},$user->{'umfquota'},
-					"mail", $user),
-				2, \@tds);
-			}
+		print &ui_table_row(
+			&hlink($text{'user_uquota'}, "diskquota"),
+			&quota_field("quota", $user->{'quota'},
+			$user->{'uquota'}, $user->{'ufquota'},
+			"home", $user),
+			2, \@tds);
 		}
 
 	if ($showhome) {
@@ -179,7 +168,6 @@ elsif ($user_type eq 'ftp') {
 	print &ui_hidden("new", 1);
 	print &ui_hidden("dom", $in{'dom'});
 	print &ui_hidden("quota_def", 1);
-	print &ui_hidden("mquota_def", 1);
 	print &ui_hidden("recovery_def", 1);
 	print &ui_hidden('newmail_def', 1);
 	print &ui_hidden("web", 1);
@@ -272,12 +260,6 @@ elsif ($user_type eq 'mail') {
 				"quota", $user->{'quota'}, $user->{'uquota'},
 				$user->{'ufquota'}, "home", $user);
 			print &vui_hidden($quota_data);
-			}
-		if (&has_mail_quotas()) {
-			my $mquota_data = &quota_field(
-				"mquota", $user->{'mquota'}, $user->{'umquota'},
-				$user->{'umfquota'}, "mail", $user);
-			print &vui_hidden($mquota_data);
 			}
 		}
 
@@ -836,25 +818,14 @@ else {
 			$text{$header2_title}, "width=100%", 2, "table2", 0);
 		}
 
-	if ($showquota) {
+	if ($showquota && &has_home_quotas()) {
 		# Show quotas field(s)
-		if (&has_home_quotas()) {
-			print &ui_table_row(
-				&hlink($qsame ? $text{'user_umquota'}
-					: $text{'user_uquota'}, "diskquota"),
-				&quota_field("quota", $user->{'quota'},
-				$user->{'uquota'}, $user->{'ufquota'},
-				"home", $user),
-				2, \@tds);
-			}
-		if (&has_mail_quotas()) {
-			print &ui_table_row(
-				&hlink($text{'user_mquota'}, "diskmquota"),
-				&quota_field("mquota", $user->{'mquota'},
-					     $user->{'umquota'},
-					     $user->{'umfquota'}, "mail",$user),
-				2, \@tds);
-			}
+		print &ui_table_row(
+			&hlink($text{'user_uquota'}, "diskquota"),
+			&quota_field("quota", $user->{'quota'},
+			$user->{'uquota'}, $user->{'ufquota'},
+			"home", $user),
+			2, \@tds);
 		}
 
 	if ($showhome) {

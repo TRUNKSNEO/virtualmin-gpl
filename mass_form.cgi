@@ -22,14 +22,9 @@ print &ui_hidden("dom", $in{'dom'}),"\n";
 print &ui_table_start($text{'mass_header'}, undef, 2);
 
 # Inputs for quotas
-@qtypes = ( );
-push(@qtypes, "quota") if (&has_home_quotas());
-push(@qtypes, "mquota") if (&has_mail_quotas());
-foreach $quota (@qtypes) {
-	print &ui_table_row($text{'mass_'.$quota},
-	    &opt_quota_input($quota, "none",
-			     $quota eq "quota" ? "home" :
-				$quota eq "mquota" ? "mail" : "none",
+if (&has_home_quotas()) {
+	print &ui_table_row($text{'mass_quota'},
+	    &opt_quota_input($quota, "none", "home",
 			     $text{'mass_leave'}, $text{'mass_set'}));
 	}
 

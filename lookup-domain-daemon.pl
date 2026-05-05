@@ -173,14 +173,10 @@ local ($d, $user) = @_;
 local $now = localtime(time());
 if ($d && $user) {
 	# Get the user's quota
-	local $qmode = &mail_under_home() && &has_home_quotas() ? "home" :
-		       &has_mail_quotas() ? "mail" : undef;
+	local $qmode = &has_home_quotas() ? "home" : undef;
 	local ($quota, $uquota);
 	if ($qmode eq "home") {
 		($quota, $uquota) = ($user->{'quota'}, $user->{'uquota'});
-		}
-	elsif ($qmode eq "mail") {
-		($quota, $uquota) = ($user->{'mquota'}, $user->{'umquota'});
 		}
 	local $quotadiff = $quota ? ($quota - $uquota) : undef;
 

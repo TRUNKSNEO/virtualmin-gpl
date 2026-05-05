@@ -58,7 +58,6 @@ $info->{'fhide'} = \%fhide;
 if (&has_home_quotas()) {
 	local @quota;
 	local $homesize = &quota_bsize("home");
-	local $mailsize = &quota_bsize("mail");
 	local $maxquota = 0;
 
 	# Work out quotas
@@ -76,12 +75,10 @@ if (&has_home_quotas()) {
 				# Just the domain owner
 				local $duser = &get_domain_owner($d, 1, 0, 1);
 				$home = $duser->{'uquota'};
-				$mail = $duser->{'umquota'};
 				$dbusage = 0;
-				$quota = $duser->{'quota'} + $duser->{'mquota'};
+				$quota = $duser->{'quota'};
 				}
-			local $usage = $home*$homesize +
-				       $mail*$mailsize;
+			local $usage = $home*$homesize;
 			$maxquota = $usage+$dbusage
 				if ($usage+$dbusage > $maxquota);
 			local $limit = $quota * $homesize;

@@ -20,11 +20,6 @@ if (&has_home_quotas()) {
 		&opt_quota_input("quota", $user->{'quota'}, "home",
 				 $text{'defaults_tmpl'}));
 	}
-if (&has_mail_quotas()) {
-	print &ui_table_row($text{'defaults_mquota'},
-		&opt_quota_input("mquota", $user->{'mquota'}, "mail",
-				 $text{'defaults_tmpl'}));
-	}
 
 # Default shell
 if (&can_mailbox_ftp()) {

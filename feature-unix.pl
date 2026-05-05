@@ -1242,8 +1242,6 @@ if ($main::got_lock_unix == 0) {
 	undef(%main::soft_home_quota);
 	undef(%main::hard_home_quota);
 	undef(%main::used_home_quota);
-	undef(%main::soft_mail_quota);
-	undef(%main::hard_mail_quota);
 	if (defined(&supports_resource_limits)) {
 		# Lock resource limits file too
 		if ($gconfig{'os_type'} =~ /-linux$/) {

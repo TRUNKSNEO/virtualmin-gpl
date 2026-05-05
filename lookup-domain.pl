@@ -145,8 +145,7 @@ if (!$d || !$d->{'spam'}) {
 	}
 
 # See what kind of quotas are relevant
-$qmode = &mail_under_home() && &has_home_quotas() ? "home" :
-	 &has_mail_quotas() ? "mail" : undef;
+$qmode = &has_home_quotas() ? "home" : undef;
 if (!$qmode) {
 	# None .. so run spam checks
 	$cachespam = $d->{'id'};
@@ -173,12 +172,7 @@ if (!$user) {
 	print "$d->{'id'}\n";
 	exit(0);
 	}
-if ($qmode eq "home") {
-	($quota, $uquota) = ($user->{'quota'}, $user->{'uquota'});
-	}
-else {
-	($quota, $uquota) = ($user->{'mquota'}, $user->{'umquota'});
-	}
+($quota, $uquota) = ($user->{'quota'}, $user->{'uquota'});
 $bsize = &quota_bsize($qmode);
 $quota *= $bsize;
 $uquota *= $bsize;

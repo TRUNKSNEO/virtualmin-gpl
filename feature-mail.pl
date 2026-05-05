@@ -2688,15 +2688,10 @@ foreach $u (&list_domain_users($d)) {
 			      $u->{'real'}, $u->{'home'}, $u->{'shell'},
 			      $u->{'email'}));
 
-	# Add home and mail quotas
+	# Add home quotas, and a placeholder for mail
 	if (&has_home_quotas()) {
 		&print_tempfile(UFILE, ":$u->{'quota'}");
-		if (&has_mail_quotas()) {
-			&print_tempfile(UFILE, ":$u->{'mquota'}");
-			}
-		else {
-			&print_tempfile(UFILE, ":-");
-			}
+		&print_tempfile(UFILE, ":-");
 		}
 	else {
 		&print_tempfile(UFILE, ":-:-");
@@ -3081,7 +3076,6 @@ while(<UFILE>) {
 		$uinfo->{'to'} = \@to;
 		if (!$uinfo->{'noquota'}) {
 			$uinfo->{'quota'} = $user[8];
-			$uinfo->{'mquota'} = $user[9];
 			}
 
 		# Restore databases
@@ -3183,8 +3177,6 @@ if (-r $file."_quota_cache") {
 		&read_file("$quota_cache_dir/$d->{'id'}", \%newqc);
 		$newqc{$opts->{'mailuser'}."_quota"} =
 			$oldqc{$opts->{'mailuser'}."_quota"};
-		$newqc{$opts->{'mailuser'}."_mquota"} =
-			$oldqc{$opts->{'mailuser'}."_mquota"};
 		&write_file("$quota_cache_dir/$d->{'id'}", \%newqc);
 		}
 	else {
@@ -4754,10 +4746,10 @@ print &ui_table_hr();
 # Default mailbox quota
 print &ui_table_row(&hlink($text{'tmpl_defmquota'}, "template_defmquota"),
     &none_def_input("defmquota", $tmpl->{'defmquota'}, $text{'tmpl_quotasel'},
-		    0, 0, $text{'form_unlimit'},
-		    [ "defmquota", "defmquota_units" ])."\n".
+                   0, 0, $text{'form_unlimit'},
+                   [ "defmquota", "defmquota_units" ])."\n".
     &quota_input("defmquota", $tmpl->{'defmquota'} eq "none" ?
-				"" : $tmpl->{'defmquota'}, "home"));
+                               "" : $tmpl->{'defmquota'}, "home"));
 
 # Unix groups for mail, FTP and DB users
 foreach $g ("mailgroup", "ftpgroup", "dbgroup") {
@@ -4862,9 +4854,9 @@ if ($supports_bcc) {
 # Save default quota
 $tmpl->{'defmquota'} = &parse_none_def("defmquota");
 if ($in{"defmquota_mode"} == 2) {
-	$in{'defmquota'} =~ /^[0-9\.]+$/ || &error($text{'tmpl_edefmquota'});
-	$tmpl->{'defmquota'} = &quota_parse("defmquota", "home");
-	}
+       $in{'defmquota'} =~ /^[0-9\.]+$/ || &error($text{'tmpl_edefmquota'});
+       $tmpl->{'defmquota'} = &quota_parse("defmquota", "home");
+       }
 
 # Save secondary groups
 foreach $g ("mailgroup", "ftpgroup", "dbgroup") {

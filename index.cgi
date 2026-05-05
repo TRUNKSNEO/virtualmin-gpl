@@ -187,15 +187,6 @@ if (&can_view_status()) {
 		# Quotas manually disabled
 		print "$text{'index_squotas1'}\n";
 		}
-	elsif ($config{'home_quotas'} &&
-	       $config{'home_quotas'} eq $config{'mail_quotas'}) {
-		# Both quota filesystems are the same
-		print &text($config{'group_quotas'} ? 'index_squotas5g' : 'index_squotas5', "<tt>$config{'home_quotas'}</tt>"),"\n";
-		}
-	elsif ($config{'home_quotas'} && $config{'mail_quotas'}) {
-		# Quota filesystems are different
-		print &text($config{'group_quotas'} ? 'index_squotas4g' : 'index_squotas4', "<tt>$config{'home_quotas'}</tt>", "<tt>$config{'mail_quotas'}</tt>"),"\n";
-		}
 	elsif ($config{'home_quotas'}) {
 		# Only for home
 		print &text($config{'group_quotas'} ? 'index_squotas3g' : 'index_squotas3', "<tt>$config{'home_quotas'}</tt>"),"\n";

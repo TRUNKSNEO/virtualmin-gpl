@@ -63,13 +63,6 @@ foreach $d (&list_domains()) {
 				$d, $usage, $u->{'quota'}*$homesize, $u);
 			}
 
-		# Check if over mail quota
-		if ($u->{'mquota'} && !$msg) {
-			$usage = $u->{'umquota'}*$mailsize;
-			$msg = &check_quota_threshold(
-				$d, $usage, $u->{'mquota'}*$homesize, $u);
-			}
-
 		# Don't send if we have already sent one for this limit within
 		# the configured minimum period
 		if ($msg && !&check_quota_interval($msg,

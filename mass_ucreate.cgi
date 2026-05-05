@@ -63,7 +63,6 @@ USER: foreach $line (@lines) {
 		$username = lc($username);
 		}
 	$quota = &has_home_quotas() ? $quota : undef;
-	local $mquota = &has_mail_quotas() ? $quota : undef;
 
 	# Make sure needed parameters are given
 	if (!$username) {
@@ -80,10 +79,6 @@ USER: foreach $line (@lines) {
 		next USER;
 		}
 	if ($quota !~ /^\d*$/) {
-		&line_error($text{'umass_equota'});
-		next USER;
-		}
-	if ($mquota !~ /^\d*$/) {
 		&line_error($text{'umass_equota'});
 		next USER;
 		}
@@ -237,7 +232,6 @@ USER: foreach $line (@lines) {
 		}
 	if (!$user->{'noquota'}) {
 		$user->{'quota'} = $quota;
-		$user->{'mquota'} = $mquota;
 		}
 	$user->{'dbs'} = \@dbs if (@dbs);
 
