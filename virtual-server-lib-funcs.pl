@@ -5551,6 +5551,13 @@ local ($users, $d, $cgi, $buttons, $links, $empty) = @_;
 
 local $can_quotas = &has_home_quotas();
 local @ashells = &list_available_shells($d);
+local $users_cols = $config{'users_cols'};
+if (!defined($users_cols)) {
+	$users_cols = join(",", grep { $config{$_} }
+		qw(show_mailsize show_lastlogin show_dbs show_plugins));
+	}
+local %users_cols = map { $_ => 1 } grep { $_ }
+		    split(/,/, $users_cols);
 
 # Given a list of services return
 # user-friendly login access label
@@ -5580,20 +5587,20 @@ push(@headers, $text{'users_name'},
 if ($can_quotas) {
 	push(@headers, $text{'users_quota'}, $text{'users_uquota'});
 	}
-if ($config{'show_mailsize'} && $d->{'mail'}) {
+if ($users_cols{'show_mailsize'} && $d->{'mail'}) {
 	push(@headers, $text{'users_size'});
 	}
-if ($config{'show_lastlogin'} && $d->{'mail'}) {
+if ($users_cols{'show_lastlogin'} && $d->{'mail'}) {
 	push(@headers, $text{'users_ll'});
 	}
 push(@headers, $text{'users_ushell'});
 # Database column
-if (($d->{'mysql'} || $d->{'postgres'}) && $config{'show_dbs'}) {
+if (($d->{'mysql'} || $d->{'postgres'}) && $users_cols{'show_dbs'}) {
 	push(@headers, $text{'users_db'});
 	}
 # Other plugins columns
 local ($f, %plugcol);
-if ($config{'show_plugins'}) {
+if ($users_cols{'show_plugins'}) {
 	foreach $f (&list_mail_plugins()) {
 		local $col = &plugin_call($f, "mailbox_header", $d);
 		if ($col) {
@@ -5683,7 +5690,7 @@ foreach $u (@$users) {
 			}
 		}
 
-	if ($config{'show_mailsize'} && $d->{'mail'}) {
+	if ($users_cols{'show_mailsize'} && $d->{'mail'}) {
 		# Mailbox link, if this user has email enabled or is the owner
 		local ($szmsg, $sz, $szb);
 		if (!$u->{'nomailfile'} &&
@@ -5709,7 +5716,7 @@ foreach $u (@$users) {
 			      'value' => $szmsg });
 		}
 
-	if ($config{'show_lastlogin'} && $d->{'mail'}) {
+	if ($users_cols{'show_lastlogin'} && $d->{'mail'}) {
 		# Last mail login
 		my $ll = &get_last_login_time($u->{'user'});
 		my $llbest;
@@ -5744,7 +5751,7 @@ foreach $u (@$users) {
 					$shell->{'desc'}) : $shell->{'desc'})));
 
 	# Show number of DBs
-	if (($d->{'mysql'} || $d->{'postgres'}) && $config{'show_dbs'}) {
+	if (($d->{'mysql'} || $d->{'postgres'}) && $users_cols{'show_dbs'}) {
 		my $userdbscnt = scalar(@{$u->{'dbs'}});
 		push(@cols, $u->{'domainowner'} ? $text{'users_all'} :
 			    $userdbscnt ? scalar(@domsdbs) == $userdbscnt
@@ -5753,7 +5760,7 @@ foreach $u (@$users) {
 		}
 
 	# Show columns from plugins
-	if ($config{'show_plugins'}) {
+	if ($users_cols{'show_plugins'}) {
 		foreach $f (grep { $plugcol{$_} } &list_mail_plugins()) {
 			push(@cols, &plugin_call($f, "mailbox_column", $u, $d));
 			}
