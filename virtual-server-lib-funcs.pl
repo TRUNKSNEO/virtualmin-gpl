@@ -18120,6 +18120,8 @@ foreach my $t (@template_features) {
 	my $sfunc = "show_template_".$t;
 	next if (!defined(&$sfunc));
 	next if ($t eq 'plugins' && !&has_template_plugins());
+	my $cfunc = "check_module_".$t;
+	next if (defined(&$cfunc) && !&$cfunc());
 	if ($config{$t} || !$isfeature{$t} ||
 	    $t eq 'mail' || $t eq 'web' || $t eq 'ssl') {
 		push(@rv, $t);
