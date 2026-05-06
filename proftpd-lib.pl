@@ -217,7 +217,7 @@ $main::got_lock_ftp++;
 # Unlock the ProFTPd config file
 sub release_lock_ftp
 {
-return if (!&has_proftpd_support());
+return if (!$main::got_lock_ftp);
 if ($main::got_lock_ftp == 1) {
 	&require_proftpd();
 	&unlock_file($proftpd::config{'proftpd_conf'});
