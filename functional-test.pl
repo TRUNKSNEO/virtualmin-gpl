@@ -7557,9 +7557,9 @@ $ssl_tests = [
 	{ 'command' => 'get-dns.pl',
 	  'args' => [ [ 'domain', $test_domain ],
 		      [ 'type', 'TLSA' ] ],
-	  'grep' => [ 'TLSA\\s+3 1 1 [0-9a-f]{64}' ],
+	  'grep' => [ 'TLSA\\s+3 1 1 [0-9a-f]{32}' ],
 	  'antigrep' => [
-		'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'
+		'e3b0c44298fc1c149afbf4c8996fb924'
 		],
 	},
 	{ 'command' => 'rm -f /tmp/functional-test-ec.key /tmp/functional-test-ec.cert' },
