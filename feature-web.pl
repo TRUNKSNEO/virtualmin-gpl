@@ -5663,7 +5663,8 @@ foreach my $r (@redirs) {
 	my $rc = { %$r };
 	&remove_wellknown_redirect($rc);
 	if ($rc->{'path'} eq '/' &&
-	    $rc->{'dest'} eq 'http://'.$alias->{'dom'}.'/' &&
+	    ($rc->{'dest'} eq 'http://'.$alias->{'dom'}.'/' ||
+	     $rc->{'dest'} eq 'https://'.$alias->{'dom'}.'/') &&
 	    $rc->{'host'} eq '(www\.)?'.quotemeta($d->{'dom'})) {
 		return 1;
 		}
@@ -5696,7 +5697,7 @@ foreach my $r (@redirs) {
 
 if ($redir && !@dels) {
 	# Need to add
-	my @protos = ( 'http', $alias->{'ssl'} ? ( 'https' ) : ( ) );
+	my @protos = ( 'http', &domain_has_ssl($alias) ? ( 'https' ) : ( ) );
 	foreach my $p (@protos) {
 		my $r = { 'path' => '/',
 			  'dest' => $p.'://'.$alias->{'dom'}.'/',
