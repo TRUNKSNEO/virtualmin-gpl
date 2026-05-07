@@ -117,13 +117,6 @@ if ($aliasdom) {
 			    &show_domain_name($aliasdom)."</a>".
 			    ($d->{'aliasmail'} ?
 				" (".$text{'edit_aliasmail'}.")" : ""));
-	if (&can_edit_redirect() && &has_web_redirects($d)) {
-		my $aliasredir = &get_alias_redirect($d);
-		$aliasredir = $d->{'aliasredir'} if ($aliasredir < 0);
-		print &ui_table_row($text{'edit_aliasredir'},
-				    &ui_yesno_radio("aliasredir",
-						    $aliasredir ? 1 : 0));
-		}
 	}
 elsif ($parentdom) {
 	# Show link to parent domain
@@ -216,6 +209,15 @@ if (!$parentdom) {
 print &ui_table_row($text{'edit_owner'},
 		    &ui_textbox("owner", $d->{'owner'}, 50, 0, undef,
 			  "autocomplete='off'"));
+
+# Show alias redirect mode
+if ($aliasdom && &can_edit_redirect() && &has_web_redirects($d)) {
+	my $aliasredir = &get_alias_redirect($d);
+	$aliasredir = $d->{'aliasredir'} if ($aliasredir < 0);
+	print &ui_table_row($text{'edit_aliasredir'},
+			    &ui_yesno_radio("aliasredir",
+					    $aliasredir ? 1 : 0));
+	}
 
 if (!$parentdom) {
 	# Show owner's email address and password
