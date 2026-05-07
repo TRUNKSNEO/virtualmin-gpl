@@ -321,6 +321,46 @@ else {
 return $url;
 }
 
+# ftp_encrypted_curl_command([user], [pass])
+# Builds a curl command and stdin source. Credentials are passed via curl config
+# on stdin so they do not appear in the process list.
+sub ftp_encrypted_curl_command
+{
+my ($user, $pass) = @_;
+my $cmd = "curl --ssl-reqd -k -sS";
+my $stdin = "/dev/null";
+if (defined($user) && $user ne "") {
+	$cmd .= " --config -";
+	$pass = "" if (!defined($pass));
+	my $config = "user = ".&ftp_encrypted_curl_config_quote(
+		$user.":".$pass)."\n";
+	$stdin = \$config;
+	}
+return ($cmd, $stdin);
+}
+
+# ftp_encrypted_curl_config_quote(value)
+# Quotes a value for curl --config.
+sub ftp_encrypted_curl_config_quote
+{
+my ($value) = @_;
+$value =~ s/\\/\\\\/g;
+$value =~ s/"/\\"/g;
+$value =~ s/\r/\\r/g;
+$value =~ s/\n/\\n/g;
+$value =~ s/\t/\\t/g;
+return "\"".$value."\"";
+}
+
+# ftp_encrypted_execute_curl(command, stdin, stdout, stderr)
+# Runs a curl command while logging the sanitized command line.
+sub ftp_encrypted_execute_curl
+{
+my ($cmd, $stdin, $stdout, $stderr) = @_;
+&additional_log('exec', undef, $cmd) if (!&is_readonly_mode());
+return &execute_command($cmd, $stdin, $stdout, $stderr);
+}
+
 # ftp_encrypted_upload(..)
 # Takes the same parameters as ftp_upload, but requires FTP over TLS.
 sub ftp_encrypted_upload
@@ -331,15 +371,12 @@ if (!&has_command("curl")) {
 	if ($error) { $$error = $msg; return 0; }
 	else { &error($msg); }
 	}
-my $cmd = "curl --ssl-reqd -k -sS";
-if ($user) {
-	$cmd .= " -u ".quotemeta($user).":".quotemeta($pass);
-	}
+my ($cmd, $stdin) = &ftp_encrypted_curl_command($user, $pass);
 $cmd .= " -T ".quotemeta($srcfile);
 $cmd .= " ".quotemeta(&ftp_encrypted_url($host, $file, $port));
 my $errtemp = &transname();
-&system_logged("$cmd >/dev/null 2>".quotemeta($errtemp)." </dev/null");
-if ($? || !-r $srcfile) {
+my $ex = &ftp_encrypted_execute_curl($cmd, $stdin, "/dev/null", $errtemp);
+if ($ex || !-r $srcfile) {
 	$$error = &html_escape(&read_file_contents($errtemp)) ||
 		  "Unknown curl error with $cmd" if ($error);
 	&unlink_file($errtemp);
@@ -359,15 +396,12 @@ if (!&has_command("curl")) {
 	if ($error) { $$error = $msg; return 0; }
 	else { &error($msg); }
 	}
-my $cmd = "curl --ssl-reqd -k -sS";
-if ($user) {
-	$cmd .= " -u ".quotemeta($user).":".quotemeta($pass);
-	}
+my ($cmd, $stdin) = &ftp_encrypted_curl_command($user, $pass);
 $cmd .= " -Q ".quotemeta($command);
 $cmd .= " ".quotemeta(&ftp_encrypted_url($host, "/", $port));
 my $errtemp = &transname();
-&system_logged("$cmd >/dev/null 2>".quotemeta($errtemp)." </dev/null");
-if ($?) {
+my $ex = &ftp_encrypted_execute_curl($cmd, $stdin, "/dev/null", $errtemp);
+if ($ex) {
 	$$error = &html_escape(&read_file_contents($errtemp)) ||
 		  "Unknown curl error with $cmd" if ($error);
 	&unlink_file($errtemp);
@@ -388,16 +422,14 @@ if (!&has_command("curl")) {
 	if ($error) { $$error = $msg; return 0; }
 	else { &error($msg); }
 	}
-my $cmd = "curl --ssl-reqd -k -sS";
-if ($user) {
-	$cmd .= " -u ".quotemeta($user).":".quotemeta($pass);
-	}
+my ($cmd, $stdin) = &ftp_encrypted_curl_command($user, $pass);
 $cmd .= " --list-only" if (!$longmode);
 my $listdir = $dir eq "/" ? "/" : $dir."/";
 $cmd .= " ".quotemeta(&ftp_encrypted_url($host, $listdir, $port));
 my $errtemp = &transname();
-my $out = &backquote_command("$cmd 2>".quotemeta($errtemp)." </dev/null");
-if ($?) {
+my $out;
+my $ex = &ftp_encrypted_execute_curl($cmd, $stdin, \$out, $errtemp);
+if ($ex) {
 	$$error = &html_escape(&read_file_contents($errtemp)) ||
 		  "Unknown curl error with $cmd" if ($error);
 	&unlink_file($errtemp);
@@ -470,28 +502,25 @@ if (!&has_command("curl")) {
 	if ($error) { $$error = $msg; return }
 	else { &error($msg); }
 	}
-my $cmd = "curl --ssl-reqd -k -sS";
-if ($user) {
-	$cmd .= " -u ".quotemeta($user).":".quotemeta($pass);
-	}
+my ($cmd, $stdin) = &ftp_encrypted_curl_command($user, $pass);
 if (!ref($dest)) {
 	$cmd .= " -o ".quotemeta($dest);
 	}
 my $url = &ftp_encrypted_url($host, $file, $port);
 $cmd .= " ".quotemeta($url);
 my $errtemp = &transname();
+my $ex;
 if (ref($dest)) {
 	# Save to scalar reference
-	$$dest = &backquote_command("$cmd 2>".quotemeta($errtemp).
-		" </dev/null");
+	$ex = &ftp_encrypted_execute_curl($cmd, $stdin, $dest, $errtemp);
 	}
 else {
 	# Save to a file
-	&system_logged("$cmd >".quotemeta($dest)." 2>".
-		quotemeta($errtemp)." </dev/null");
+	$ex = &ftp_encrypted_execute_curl($cmd, $stdin, "/dev/null",
+					  $errtemp);
 	}
 # Handle any error
-if ($? || (!ref($dest) && !-s $dest)) {
+if ($ex || (!ref($dest) && !-s $dest)) {
 	my $errmsg = &html_escape(&read_file_contents($errtemp)) ||
 		     "Unknown curl error with $cmd";
 	&unlink_file($errtemp);
