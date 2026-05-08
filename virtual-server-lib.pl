@@ -76,13 +76,12 @@ $config{'virt'} = 1;
 $config{'virt6'} = 1;
 
 &generate_plugins_list($no_virtualmin_plugins ? '' : $config{'plugins'});
-@retired_features = ( 'ftp' );
 @opt_features = ( 'unix', 'dir', 'dns', 'mail', 'web', 'webalizer', 'ssl',
-		  'logrotate', 'mysql', 'postgres', 'spam', 'virus',
+		  'logrotate', 'mysql', 'postgres', 'ftp', 'spam', 'virus',
 		  $virtualmin_pro ? ( 'status' ) : ( ),
 		  'webmin' );
 @vital_features = ( 'dir', 'unix' );
-@deprecated_features = ( 'webalizer' );
+@deprecated_features = ( 'webalizer', 'ftp' );
 @features = ( @opt_features );
 @backup_features = ( 'virtualmin', @features );
 @safe_backup_features = ( 'dir', 'mysql', 'postgres' );
@@ -106,7 +105,7 @@ foreach my $fname (@features, "virt", "virt6") {
 	&$ifunc() if (defined(&$ifunc));
 	}
 @migration_types = ( "cpanel", "plesk", "directadmin" );
-@startstop_features = ("web", "dns", "mail", "unix", "virus", "spam",
+@startstop_features = ("web", "dns", "mail", "ftp", "unix", "virus", "spam",
 		       "mysql", "postgres");
 @startstop_always_features = ("fpm");
 @bandwidth_features = ( @features, "backup", "restore" );
@@ -190,7 +189,7 @@ if (!$virtualmin_pro) {
 @virtualmin_backups = ( 'config', 'templates',
 			$virtualmin_pro ? ( 'resellers' ) : ( ),
 			'email', 'custom', 'scripts', 'scheds',
-			&has_ftp_chroot() ? ( 'chroot' ) : ( ),
+			$config{'ftp'} ? ( 'chroot' ) : ( ),
 			'mailserver' );
 
 @limit_types = ("mailboxlimit", "aliaslimit", "dbslimit", "domslimit",

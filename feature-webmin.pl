@@ -798,6 +798,14 @@ if ($mods{'logviewer'} && !$noextra && $d->{'webmin'}) {
 						      $sd->{'dom'}))
 				if ($elog && !$done{$elog}++);
 			}
+		# Add FTP logs
+		if ($sd->{'ftp'}) {
+			my $flog = &get_proftpd_log($sd);
+			if ($flog && !$done{$flog}++) {
+				push(@extras, $flog." ".&text('webmin_flog',
+							     $sd->{'dom'}))
+				}
+			}
 		# Add PHP log
 		my $phplog = &get_domain_php_error_log($d);
 		if ($phplog && !$done{$phplog}++) {
@@ -1471,3 +1479,4 @@ $main::got_lock_webmin-- if ($main::got_lock_webmin);
 $done_feature_script{'webmin'} = 1;
 
 1;
+

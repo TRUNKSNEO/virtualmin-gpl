@@ -827,7 +827,7 @@ sub bandwidth_unix
 {
 my ($d, $start, $bw) = @_;
 my $log = $config{'bw_ftplog'} ? $config{'bw_ftplog'} :
-	  &get_proftpd_log();
+	  $config{'ftp'} ? &get_proftpd_log() : undef;
 if ($log) {
 	my @users;
 	my @ashells = grep { $_->{'mailbox'} } &list_available_shells();
@@ -1396,3 +1396,4 @@ if ($config{'generics'}) {
 $done_feature_script{'unix'} = 1;
 
 1;
+

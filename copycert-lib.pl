@@ -38,10 +38,10 @@ if ($config{'mail'} && $mail_system == 0) {
 		   'virt' => 1,
 		   'short' => 'p' });
 	}
-if (&has_proftpd_support()) {
+if ($config{'ftp'} || &foreign_installed("proftpd")) {
 	push(@rv, {'id' => 'proftpd',
 		   'dom' => 0,
-		   'virt' => 0,
+		   'virt' => 1,
 		   'short' => 'f' });
 	}
 if ($config{'mysql'}) {
@@ -254,26 +254,48 @@ if ($mail_system == 0) {
 		}
 	}
 
-my $proftpd_conf;
-if (&has_proftpd_support()) {
-	# Check ProFTPd global certificate
+if ($config{'ftp'} || &foreign_installed("proftpd")) {
+	# Check ProFTPd per-IP certificate
 	&foreign_require("proftpd");
-	$proftpd_conf = eval { &proftpd::get_config() };
-	if ($@ || !ref($proftpd_conf)) {
-		$proftpd_conf = undef;
+	my $conf = &proftpd::get_config();
+	if ($perip) {
+		my ($virt, $vconf) = &get_proftpd_virtual($d);
+		if ($virt) {
+			my $cfile = &proftpd::find_directive(
+					"TLSRSACertificateFile", $vconf);
+			$cfile ||= &proftpd::find_directive(
+					"TLSECCertificateFile", $vconf);
+			my $kfile = &proftpd::find_directive(
+					"TLSRSACertificateKeyFile", $vconf);
+			$kfile ||= &proftpd::find_directive(
+					"TLSECCertificateKeyFile", $vconf);
+			my $cafile = &proftpd::find_directive(
+					"TLSCACertificateFile", $vconf);
+			if ($cfile) {
+				push(@svcs, { 'id' => 'proftpd',
+					      'cert' => $cfile,
+					      'key' => $kfile,
+					      'ca' => $cafile,
+					      'prefix' => 'ftp',
+					      'port' => 990,
+					      'ip' => $d->{'ip'},
+					      'd' => $d,
+					    });
+				}
+			}
 		}
-	}
-if ($proftpd_conf) {
+
+	# Check ProFTPd global certificate
 	my $cfile = &proftpd::find_directive(
-			"TLSRSACertificateFile", $proftpd_conf);
+			"TLSRSACertificateFile", $conf);
 	$cfile ||= &proftpd::find_directive(
-			"TLSECCertificateFile", $proftpd_conf);
+			"TLSECCertificateFile", $conf);
 	my $kfile = &proftpd::find_directive(
-			"TLSRSACertificateKeyFile", $proftpd_conf);
+			"TLSRSACertificateKeyFile", $conf);
 	$kfile ||= &proftpd::find_directive(
-			"TLSECCertificateKeyFile", $proftpd_conf);
+			"TLSECCertificateKeyFile", $conf);
 	my $cafile = &proftpd::find_directive(
-			"TLSCACertificateFile", $proftpd_conf);
+			"TLSCACertificateFile", $conf);
 	if ($cfile) {
 		push(@svcs, { 'id' => 'proftpd',
 			      'cert' => $cfile,
@@ -680,14 +702,9 @@ sub copy_proftpd_ssl_service
 my ($d) = @_;
 
 # Get the ProFTPd config and cert files
-&has_proftpd_support() || &error($text{'copycert_eproftpd'});
 &foreign_require("proftpd");
 &proftpd::lock_proftpd_files();
-my $conf = eval { &proftpd::get_config() };
-if ($@ || !ref($conf)) {
-	&proftpd::unlock_proftpd_files();
-	&error($text{'copycert_eproftpd'});
-	}
+my $conf = &proftpd::get_config();
 my $cfile = &proftpd::find_directive("TLSRSACertificateFile", $conf);
 $cfile ||= &proftpd::find_directive("TLSECCertificateFile", $conf);
 my $kfile = &proftpd::find_directive("TLSRSACertificateKeyFile", $conf);
