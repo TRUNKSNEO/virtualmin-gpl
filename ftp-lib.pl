@@ -357,6 +357,9 @@ return "\"".$value."\"";
 sub ftp_encrypted_execute_curl
 {
 my ($cmd, $stdin, $stdout, $stderr) = @_;
+if (defined(&execute_command_logged)) {
+	return &execute_command_logged($cmd, $stdin, $stdout, $stderr);
+	}
 &additional_log('exec', undef, $cmd) if (!&is_readonly_mode());
 return &execute_command($cmd, $stdin, $stdout, $stderr);
 }
