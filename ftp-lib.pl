@@ -352,28 +352,18 @@ $value =~ s/\t/\\t/g;
 return "\"".$value."\"";
 }
 
-# ftp_encrypted_curl_data_tls_error(error-file)
-# Returns 1 if curl failed in the old NSS FTPS data-channel session reuse path
-sub ftp_encrypted_curl_data_tls_error
-{
-my ($stderr) = @_;
-my $err = ref($stderr) ? $$stderr :
-	  $stderr && -r $stderr ? &read_file_contents($stderr) : "";
-return 0 if ($err !~ /\S/);
-return 1 if ($err =~ /NSS:\s+client certificate not found \(nickname not specified\)/);
-return 1 if ($err =~ /NSS error -5938 \(PR_END_OF_FILE_ERROR\)/);
-return 1 if ($err =~ /session reuse required/i);
-return 1 if ($err =~ /TLS session .*not resum/i);
-return 0;
-}
-
-# ftp_encrypted_curl_quote_succeeded(error-file, command)
-# Returns 1 if curl verbose output shows a 2xx reply to the quoted command
-sub ftp_encrypted_curl_quote_succeeded
+# ftp_encrypted_curl_quote_succeeded_before_data_error(error-file, command)
+# Returns 1 if the quoted command succeeded before a later data-channel error
+sub ftp_encrypted_curl_quote_succeeded_before_data_error
 {
 my ($stderr, $command) = @_;
 my $err = ref($stderr) ? $$stderr :
 	  $stderr && -r $stderr ? &read_file_contents($stderr) : "";
+return 0 if ($err !~ /\S/);
+return 0 if ($err !~ /NSS:\s+client certificate not found \(nickname not specified\)/ &&
+	     $err !~ /NSS error -5938 \(PR_END_OF_FILE_ERROR\)/ &&
+	     $err !~ /session reuse required/i &&
+	     $err !~ /TLS session .*not resum/i);
 my $quoted = quotemeta($command);
 my $seen;
 foreach my $line (split(/\r?\n/, $err)) {
@@ -441,8 +431,8 @@ $cmd .= " ".quotemeta(&ftp_encrypted_url($host, "/", $port));
 my $errtemp = &transname();
 my $ex = &ftp_encrypted_execute_curl($cmd, $stdin, "/dev/null", $errtemp);
 if ($ex) {
-	if (&ftp_encrypted_curl_data_tls_error($errtemp) &&
-	    &ftp_encrypted_curl_quote_succeeded($errtemp, $command)) {
+	if (&ftp_encrypted_curl_quote_succeeded_before_data_error(
+		$errtemp, $command)) {
 		# The -Q command already ran, so only curl's implicit listing
 		# failed, and we don't care about that
 		&unlink_file($errtemp);
