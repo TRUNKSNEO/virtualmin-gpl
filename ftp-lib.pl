@@ -428,25 +428,22 @@ my ($cmd, $stdin) = &ftp_encrypted_curl_command($user, $pass);
 $cmd .= " -v";
 $cmd .= " -Q ".quotemeta($command);
 $cmd .= " ".quotemeta(&ftp_encrypted_url($host, "/", $port));
-my $errtemp = &transname();
-my $ex = &ftp_encrypted_execute_curl($cmd, $stdin, "/dev/null", $errtemp);
+my $err;
+my $ex = &ftp_encrypted_execute_curl($cmd, $stdin, "/dev/null", \$err);
 if ($ex) {
 	if (&ftp_encrypted_curl_quote_succeeded_before_data_error(
-		$errtemp, $command)) {
+		\$err, $command)) {
 		# The -Q command already ran, so only curl's implicit listing
 		# failed, and we don't care about that
-		&unlink_file($errtemp);
 		return 200;
 		}
-	my $errmsg = &read_file_contents($errtemp);
+	my $errmsg = $err || "";
 	$errmsg =~ s/^> USER .*/> USER ****/mg;
 	$errmsg =~ s/^> PASS .*/> PASS ****/mg;
 	$$error = &html_escape($errmsg) ||
 		  "Unknown curl error with $cmd" if ($error);
-	&unlink_file($errtemp);
 	return 0;
 	}
-&unlink_file($errtemp);
 return 200;
 }
 
