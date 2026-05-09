@@ -7746,6 +7746,8 @@ $sslserv_tests = [
 	{ 'command' => 'cat '.&dovecot::get_config_file(),
 	  'grep' => [ 'local_name '.$test_domain,
 		      'local_name \\*\\.'.$test_domain,
+		      'local_name '.$test_subdomain,
+		      'local_name \\*\\.'.$test_subdomain,
 		    ],
 	},
 
@@ -7911,6 +7913,8 @@ $sslserv_tests = [
 	{ 'command' => 'cat '.&dovecot::get_config_file(),
 	  'antigrep' => [ 'local_name '.$test_domain,
 		          'local_name \\*\\.'.$test_domain,
+		          'local_name '.$test_subdomain,
+		          'local_name \\*\\.'.$test_subdomain,
 		        ],
 	},
 

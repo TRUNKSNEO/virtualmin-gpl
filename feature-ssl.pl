@@ -2404,21 +2404,20 @@ else {
 }
 
 # dovecot_local_name_cmp(name1, name2)
-# Order Dovecot local_name filters from less specific to more specific;
-# Dovecot uses the last matching filter, so wildcard and child host blocks
-# that overlap must be placed before the exact hostname they can match
+# Order Dovecot local_name filters only when one wildcard can also match the
+# other name. Dovecot uses the last matching local_name filter.
 sub dovecot_local_name_cmp
 {
 my ($a, $b) = @_;
-my $ac = scalar(split(/\./, $a));
-my $bc = scalar(split(/\./, $b));
-my $rv = $ac <=> $bc;
-return $rv if ($rv);
-my $aw = $a =~ /^\*\./ ? 1 : 0;
-my $bw = $b =~ /^\*\./ ? 1 : 0;
-$rv = $bw <=> $aw;
-return $rv if ($rv);
-return lc($a) cmp lc($b);
+$a = lc($a);
+$b = lc($b);
+$a =~ s/\.$//;
+$b =~ s/\.$//;
+my $aw = $a =~ s/^\*\.// ? 1 : 0;
+my $bw = $b =~ s/^\*\.// ? 1 : 0;
+return -1 if ($aw && !$bw && $b =~ /^[^\.]+\.\Q$a\E$/);
+return 1 if ($bw && !$aw && $a =~ /^[^\.]+\.\Q$b\E$/);
+return 0;
 }
 
 # dovecot_local_name_block_cmp(&block1, &block2)
@@ -2431,16 +2430,46 @@ return $rv if ($rv);
 return $a->{'line'} <=> $b->{'line'};
 }
 
-# dovecot_local_name_needs_move(name, &block, \@blocks)
+# dovecot_local_name_block_cert(&block)
+# Returns a local_name block's SSL cert and key files
+sub dovecot_local_name_block_cert
+{
+my ($block) = @_;
+my %mems = map { $_->{'name'}, $_->{'value'} } @{$block->{'members'} || []};
+my $cert = $mems{'ssl_cert'} || $mems{'ssl_server_cert_file'} ||
+	   $mems{'ssl_cert_file'};
+my $key = $mems{'ssl_key'} || $mems{'ssl_server_key_file'} ||
+	  $mems{'ssl_key_file'};
+foreach my $f ($cert, $key) {
+	$f =~ s/^<// if (defined($f));
+	}
+return ($cert, $key);
+}
+
+# dovecot_local_name_uses_cert(&block, cert-file, key-file)
+# Returns 1 if a local_name block already uses the given SSL cert and key
+sub dovecot_local_name_uses_cert
+{
+my ($block, $cert, $key) = @_;
+my ($bcert, $bkey) = &dovecot_local_name_block_cert($block);
+foreach my $f ($cert, $key) {
+	$f =~ s/^<// if (defined($f));
+	}
+return defined($bcert) && defined($bkey) &&
+       $bcert eq $cert && $bkey eq $key;
+}
+
+# dovecot_local_name_needs_move(name, &block, \@blocks, cert-file, key-file)
 # Returns 1 if a block is out of order relative to other local_name blocks
 sub dovecot_local_name_needs_move
 {
-my ($name, $block, $blocks) = @_;
+my ($name, $block, $blocks, $cert, $key) = @_;
 my @blocks = sort { &dovecot_local_name_block_cmp($a, $b) } @$blocks;
 my $idx = &indexof($block, @blocks);
 return 0 if ($idx < 0);
 for (my $i = 0; $i < @blocks; $i++) {
 	$i == $idx && next;
+	next if (&dovecot_local_name_uses_cert($blocks[$i], $cert, $key));
 	my $cmp = &dovecot_local_name_cmp($name, $blocks[$i]->{'value'});
 	return 1 if ($i < $idx && $cmp < 0);
 	return 1 if ($i > $idx && $cmp > 0);
@@ -2606,9 +2635,8 @@ if (!$d->{'virt'}) {
 			 $_->{'section'} } @$conf;
 	my @doms = ( $d, &get_domain_by("alias", $d->{'id'}) );
 	my @myloc = grep { &hostname_under_domain(\@doms, $_->{'value'}) } @loc;
-	my @dnames = sort { &dovecot_local_name_cmp($a, $b) }
-	               map { ($_->{'dom'}, "*.".$_->{'dom'}) }
-	                  grep { !$_->{'deleting'} } @doms;
+	my @dnames = map { ($_->{'dom'}, "*.".$_->{'dom'}) }
+			 grep { !$_->{'deleting'} } @doms;
 	my @delloc;
 	if (!$enable) {
 		# All existing local_name blocks are being removed
@@ -2616,6 +2644,10 @@ if (!$d->{'virt'}) {
 		}
 	else {
 		# May need to add or update
+		my $cert = $cvalue;
+		my $key = $kvalue;
+		$cert =~ s/^<//;
+		$key =~ s/^<//;
 		foreach my $n (@dnames) {
 			my ($l) = grep { $_->{'value'} eq $n } @loc;
 			my $isnew = !$l;
@@ -2637,13 +2669,19 @@ if (!$d->{'virt'}) {
 				             'value' => $kvalue, } ],
 				       'file' => $cfile };
 				}
-			my @otherloc = grep { $_ ne $l }
+			my @otherloc = grep {
+					$_ ne $l &&
+					!&dovecot_local_name_uses_cert(
+						$_, $cert, $key)
+					}
 				       sort { &dovecot_local_name_block_cmp($a, $b) }
 				       @loc;
 			my ($before) = grep {
 				&dovecot_local_name_cmp($n, $_->{'value'}) < 0
 				} @otherloc;
-			if ($isnew || &dovecot_local_name_needs_move($n, $l, \@loc)) {
+			if ($isnew ||
+			    &dovecot_local_name_needs_move(
+				$n, $l, \@loc, $cert, $key)) {
 				if (!$isnew) {
 					&remove_dovecot_local_name($conf, $l);
 					@loc = grep { $_ ne $l } @loc;
