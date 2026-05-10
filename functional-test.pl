@@ -7843,7 +7843,7 @@ $sslserv_tests = [
 		      [ 'desc', 'Test SSL subdomain' ],
 		      [ 'pass', 'smeg' ],
 		      [ 'parent', $test_domain ],
-		      [ 'dir' ], [ 'unix' ], [ 'web' ], [ 'dns' ], [ 'mail' ],
+		      [ 'dir' ], [ 'web' ], [ 'dns' ], [ 'mail' ],
 		      [ 'ssl' ],
 		      [ 'parent-ip' ],
 		      [ 'break-ssl-cert' ],
