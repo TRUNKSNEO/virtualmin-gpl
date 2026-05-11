@@ -312,9 +312,6 @@ $url .= ":".$port if ($port);
 if (!defined($file) || $file eq "" || $file eq "/") {
 	$url .= "/";
 	}
-elsif ($file =~ /^\//) {
-	$url .= $file;
-	}
 else {
 	$url .= "/".$file;
 	}
