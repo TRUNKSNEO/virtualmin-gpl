@@ -7601,13 +7601,13 @@ $sslserv_tests = [
 		      @create_args, ],
         },
 
-	# Create an alias as well
+	# Create an alias with mail and SSL as well
 	{ 'command' => 'create-domain.pl',
 	  'args' => [ [ 'domain', $test_subdomain ],
 		      [ 'alias', $test_domain ],
 		      [ 'prefix', 'example2' ],
 		      [ 'desc', 'Test alias-domain' ],
-		      [ 'dir' ], [ $web ], [ 'dns' ], [ 'mail' ],
+		      [ 'dir' ], [ $web ], [ 'dns' ], [ 'mail' ], [ $ssl ],
 		      @create_args, ],
 	},
 
@@ -7746,6 +7746,8 @@ $sslserv_tests = [
 	{ 'command' => 'cat '.&dovecot::get_config_file(),
 	  'grep' => [ 'local_name '.$test_domain,
 		      'local_name \\*\\.'.$test_domain,
+		      'local_name '.$test_subdomain,
+		      'local_name \\*\\.'.$test_subdomain,
 		    ],
 	},
 
@@ -7835,6 +7837,68 @@ $sslserv_tests = [
 	  'antigrep' => [ 'O=Test 2 SSL domain', 'CN=(\\*\\.)?'.$test_domain ],
 	},
 
+	# Create a child domain on the shared IP with a different cert
+	{ 'command' => 'create-domain.pl',
+	  'args' => [ [ 'domain', $test_ssl_subdomain ],
+		      [ 'desc', 'Test SSL subdomain' ],
+		      [ 'pass', 'smeg' ],
+		      [ 'parent', $test_domain ],
+		      [ 'dir' ], [ 'unix' ], [ $web ], [ 'dns' ], [ 'mail' ],
+		      [ $ssl ],
+		      [ 'parent-ip' ],
+		      [ 'break-ssl-cert' ],
+		      [ 'content' => 'Test SSL subdomain home page' ],
+		      @create_args, ],
+	},
+
+	# Give the child its own distinct SSL cert
+	{ 'command' => 'generate-cert.pl',
+	  'args' => [ [ 'domain' => $test_ssl_subdomain ],
+		      [ 'self' ],
+		      [ 'o', 'Test 3 SSL subdomain' ] ],
+	},
+
+	# Install a Dovecot cert for the child domain too
+	{ 'command' => 'install-service-cert.pl',
+	  'args' => [ [ 'domain', $test_ssl_subdomain ],
+		      [ 'add-domain' ],
+		      [ 'service', 'dovecot' ] ],
+	},
+
+	# Check that parent wildcard is before the child host
+	{ 'command' => 'cat '.&dovecot::get_config_file(),
+	  'grep' => [ 'local_name \\*\\.'.$test_domain,
+		      'local_name '.$test_ssl_subdomain,
+		    ],
+	},
+	{ 'command' => "perl -ne 'if (/local_name \\\\Q*.$test_domain\\\\E\\\\b/) ".
+		       "{ \$w = \$.; } ".
+		       "if (/local_name \\\\Q$test_ssl_subdomain\\\\E\\\\b/) ".
+		       "{ \$s = \$.; } ".
+		       "END { exit(!(\$w && \$s && \$w < \$s)); }' ".
+		       &dovecot::get_config_file(),
+	},
+
+	# Validate that child Dovecot SNI prefers the specific host cert
+	{ 'command' => 'test-imap.pl',
+	  'args' => [ [ 'user', $test_ssl_subdomain_user ],
+		      [ 'pass', 'smeg' ],
+		      [ 'server', $test_ssl_subdomain ],
+		      [ 'ssl' ] ],
+	},
+	{ 'command' => 'openssl s_client -host mail.'.$test_ssl_subdomain.
+		       ' -servername '.$test_ssl_subdomain.
+		       ' -port 993 </dev/null',
+	  'grep' => [ 'O=Test 3 SSL subdomain',
+		      'CN=(\\*\\.)?'.$test_ssl_subdomain ],
+	},
+
+	# Remove the child domain again before the remaining service-cert tests
+	{ 'command' => 'delete-domain.pl',
+	  'args' => [ [ 'domain', $test_ssl_subdomain ] ],
+	  'cleanup' => 1,
+	},
+
 	# Turn off per-service certs
 	{ 'command' => 'install-service-cert.pl',
 	  'args' => [ [ 'domain', $test_domain ],
@@ -7849,6 +7913,8 @@ $sslserv_tests = [
 	{ 'command' => 'cat '.&dovecot::get_config_file(),
 	  'antigrep' => [ 'local_name '.$test_domain,
 		          'local_name \\*\\.'.$test_domain,
+		          'local_name '.$test_subdomain,
+		          'local_name \\*\\.'.$test_subdomain,
 		        ],
 	},
 
