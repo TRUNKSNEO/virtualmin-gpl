@@ -515,7 +515,7 @@ return $db_conn_desc;
 sub script_whmcs_latest
 {
 local ($ver) = @_;
-local $vwant = &compare_versions($ver, "9") >= 0 ? "9\\." :
+local $vwant = &compare_versions($ver, "9") >= 0 ? "9" :
 	       &compare_versions($ver, "8.13") >= 0 ? "8\\.13" : undef;
 if ($vwant) {
 	return ( "https://download.whmcs.com/assets/scripts/get-downloads.php",
