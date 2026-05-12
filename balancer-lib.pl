@@ -173,26 +173,34 @@ foreach my $port (@ports) {
 	&flush_file_lines($virt->{'file'});
 	}
 
+&enable_ssl_proxy_engine($d, $balancer->{'urls'}, @ports);
+
+&register_post_action(\&restart_apache);
+return undef;
+}
+
+# enable_ssl_proxy_engine(&domain, &urls, ports...)
 # If proxying to SSL, turn on SSLProxyEngine
+sub enable_ssl_proxy_engine
+{
+my ($d, $urls, @ports) = @_;
+return if (!$urls);
 my $ssl = 0;
-foreach my $url (@{$balancer->{'urls'}}) {
+foreach my $url (@$urls) {
 	$ssl = 1 if ($url =~ /^https:/i);
 	}
 if ($ssl) {
 	foreach my $port (@ports) {
-		my ($virt, $vconf) = &get_apache_virtual($d->{'dom'}, $port);
+		my ($virt, $vconf, $conf) = &get_apache_virtual($d->{'dom'}, $port);
 		next if (!$virt);
 		my @spe = &apache::find_directive("SSLProxyEngine", $vconf);
-		if (!@spe && lc($spe[0]) ne "on") {
+		if (!@spe || lc($spe[0]) ne "on") {
 			&apache::save_directive("SSLProxyEngine", [ "on" ],
 						$vconf, $conf);
 			&flush_file_lines($virt->{'file'});
 			}
 		}
 	}
-
-&register_post_action(\&restart_apache);
-return undef;
 }
 
 # websockets_rewriteconds(add)
@@ -371,6 +379,8 @@ foreach my $port (@ports) {
 
 	&flush_file_lines($virt->{'file'});
 	}
+
+&enable_ssl_proxy_engine($d, $b->{'urls'}, @ports) if (!$b->{'none'});
 
 &register_post_action(\&restart_apache);
 return $done ? undef : "No proxy directives for $oldb->{'path'} found";
