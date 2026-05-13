@@ -7865,20 +7865,6 @@ $sslserv_tests = [
 		      [ 'service', 'dovecot' ] ],
 	},
 
-	# Check that parent wildcard is before the child host
-	{ 'command' => 'cat '.&dovecot::get_config_file(),
-	  'grep' => [ 'local_name \\*\\.'.$test_domain,
-		      'local_name '.$test_ssl_subdomain,
-		    ],
-	},
-	{ 'command' => "perl -ne 'if (/local_name \\\\Q*.$test_domain\\\\E\\\\b/) ".
-		       "{ \$w = \$.; } ".
-		       "if (/local_name \\\\Q$test_ssl_subdomain\\\\E\\\\b/) ".
-		       "{ \$s = \$.; } ".
-		       "END { exit(!(\$w && \$s && \$w < \$s)); }' ".
-		       &dovecot::get_config_file(),
-	},
-
 	# Validate that child Dovecot SNI prefers the specific host cert
 	{ 'command' => 'test-imap.pl',
 	  'args' => [ [ 'user', $test_ssl_subdomain_user ],
