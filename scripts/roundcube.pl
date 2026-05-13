@@ -71,13 +71,14 @@ return ([ 'memory_limit', '64M', '+' ],
 
 sub script_roundcube_release
 {
-return 4;	# Fix upgrading
+return 5;	# Add redirect
 }
 
 sub script_roundcube_php_fullver
 {
 local ($d, $ver, $sinfo, $phpver) = @_;
-my $phpver = &compare_versions($ver, "1.6.0") >= 0 ? "7.3" : 5.6;
+my $phpver = &compare_versions($ver, "1.7") >= 0 ? "8.1" :
+	     &compare_versions($ver, "1.6") >= 0 ? "7.3" : 5.6;
 return $phpver;
 }
 
@@ -296,6 +297,22 @@ else {
 	&run_as_domain_user($d, $upd_cmd);
 	}
 
+# Add a redirect to the public_html sub-dir for version 1.7.0+
+if (&compare_versions($ver, "1.7") >= 0) {
+	my @redirs = &list_redirects($d);
+	my ($r) = grep { $_->{'path'} eq $opts->{'path'} &&
+			 $_->{'alias'} &&
+			 $_->{'dest'} eq $opts->{'dir'}.'/public_html' } @redirs;
+	if (!$r) {
+		$r = { 'path' => $opts->{'path'},
+		       'alias' => 1,
+		       'dest' => $opts->{'dir'}.'/public_html',
+		       'http' => 1,
+		       'https' => 1 };
+		&create_redirect($d, $r);
+		}
+	}
+
 # Return a URL for the user
 local $url = &script_path_url($d, $opts);
 local $rp = $opts->{'dir'};
@@ -342,6 +359,17 @@ local ($d, $version, $opts) = @_;
 # Take out the DB
 if ($opts->{'newdb'}) {
 	&delete_script_database($d, $opts->{'db'});
+	}
+
+# Remove the redirect need for version 1.7.0+
+if (&compare_versions($version, "1.7") >= 0) {
+	my @redirs = &list_redirects($d);            
+        my ($r) = grep { $_->{'path'} eq $opts->{'path'} &&
+                         $_->{'alias'} &&
+                         $_->{'dest'} eq $opts->{'dir'}.'/public_html' } @redirs;
+	if ($r) {
+		&delete_redirect($d, $r);
+		}
 	}
 
 # Remove the contents of the target directory
