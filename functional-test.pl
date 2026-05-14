@@ -7607,7 +7607,7 @@ $sslserv_tests = [
 		      [ 'alias', $test_domain ],
 		      [ 'prefix', 'example2' ],
 		      [ 'desc', 'Test alias-domain' ],
-		      [ 'dir' ], [ $web ], [ 'dns' ], [ 'mail' ], [ $ssl ],
+		      [ 'dir' ], [ $web ], [ 'dns' ], [ 'mail' ],
 		      @create_args, ],
 	},
 
@@ -7843,7 +7843,7 @@ $sslserv_tests = [
 		      [ 'desc', 'Test SSL subdomain' ],
 		      [ 'pass', 'smeg' ],
 		      [ 'parent', $test_domain ],
-		      [ 'dir' ], [ 'unix' ], [ $web ], [ 'dns' ], [ 'mail' ],
+		      [ 'dir' ], [ $web ], [ 'dns' ], [ 'mail' ],
 		      [ $ssl ],
 		      [ 'parent-ip' ],
 		      [ 'break-ssl-cert' ],
@@ -7867,7 +7867,7 @@ $sslserv_tests = [
 
 	# Validate that child Dovecot SNI prefers the specific host cert
 	{ 'command' => 'test-imap.pl',
-	  'args' => [ [ 'user', $test_ssl_subdomain_user ],
+	  'args' => [ [ 'user', $test_domain_user ],
 		      [ 'pass', 'smeg' ],
 		      [ 'server', $test_ssl_subdomain ],
 		      [ 'ssl' ] ],
