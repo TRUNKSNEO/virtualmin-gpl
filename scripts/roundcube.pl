@@ -320,6 +320,10 @@ if (&compare_versions($ver, "1.7") >= 0) {
 	my $dest = &script_roundcube_public_html_alias($opts);
 	my ($r) = grep { &script_roundcube_has_public_html_alias($_, $opts) }
 		       @redirs;
+	if ($r && $r->{'dest'} ne $dest) {
+		&delete_redirect($d, $r);
+		$r = undef;
+		}
 	if (!$r) {
 		$r = { 'path' => $opts->{'path'},
 		       'alias' => 1,
