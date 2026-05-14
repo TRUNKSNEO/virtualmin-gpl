@@ -93,13 +93,10 @@ return $dest;
 sub script_roundcube_has_public_html_alias
 {
 my ($r, $opts) = @_;
-return 0 if ($r->{'path'} ne $opts->{'path'} ||
-	     !$r->{'alias'} ||
-	     !defined($r->{'dest'}));
-my $dest = &script_roundcube_public_html_alias($opts);
-return 1 if ($r->{'dest'} eq $dest);
-return $opts->{'path'} eq "/" &&
-       $r->{'dest'} eq $opts->{'dir'}.'/public_html';
+return $r->{'path'} eq $opts->{'path'} &&
+       $r->{'alias'} &&
+       defined($r->{'dest'}) &&
+       $r->{'dest'} eq &script_roundcube_public_html_alias($opts);
 }
 
 # script_roundcube_params(&domain, version, &upgrade-info)
@@ -323,10 +320,6 @@ if (&compare_versions($ver, "1.7") >= 0) {
 	my $dest = &script_roundcube_public_html_alias($opts);
 	my ($r) = grep { &script_roundcube_has_public_html_alias($_, $opts) }
 		       @redirs;
-	if ($r && $r->{'dest'} ne $dest) {
-		&delete_redirect($d, $r);
-		$r = undef;
-		}
 	if (!$r) {
 		$r = { 'path' => $opts->{'path'},
 		       'alias' => 1,
