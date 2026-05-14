@@ -93,11 +93,13 @@ return $dest;
 sub script_roundcube_has_public_html_alias
 {
 my ($r, $opts) = @_;
-my $dest = $opts->{'dir'}.'/public_html';
-return $r->{'path'} eq $opts->{'path'} &&
-       $r->{'alias'} &&
-       defined($r->{'dest'}) &&
-       $r->{'dest'} =~ /^\Q$dest\E\/?$/;
+return 0 if ($r->{'path'} ne $opts->{'path'} ||
+	     !$r->{'alias'} ||
+	     !defined($r->{'dest'}));
+my $dest = &script_roundcube_public_html_alias($opts);
+return 1 if ($r->{'dest'} eq $dest);
+return $opts->{'path'} eq "/" &&
+       $r->{'dest'} eq $opts->{'dir'}.'/public_html';
 }
 
 # script_roundcube_params(&domain, version, &upgrade-info)
