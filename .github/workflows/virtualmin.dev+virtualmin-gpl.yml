@@ -26,3 +26,4 @@ jobs:
       DEV_CHILD_GITHUB_TOKEN: ${{ secrets.DEV_CLONE_PRO_GITHUB_TOKEN }}
       PRERELEASE_UPLOAD_SSH_DIR: ${{ secrets.PRERELEASE_UPLOAD_SSH_DIR }}
       ALL_GPG_PH2: ${{ secrets.ALL_GPG_PH2 }}
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
