@@ -2403,6 +2403,23 @@ else {
 	}
 }
 
+# dovecot_local_name_cmp(name1, name2)
+# Returns -1 if name1 should be before name2 for Dovecot SNI matching,
+# 1 if it should be after, or 0 if their relative order does not matter.
+sub dovecot_local_name_cmp
+{
+my ($a, $b) = @_;
+$a = lc($a);
+$b = lc($b);
+$a =~ s/\.$//;
+$b =~ s/\.$//;
+my $aw = $a =~ s/^\*\.// ? 1 : 0;
+my $bw = $b =~ s/^\*\.// ? 1 : 0;
+return -1 if ($aw && !$bw && $b =~ /^[^\.]+\.\Q$a\E$/);
+return 1 if ($bw && !$aw && $a =~ /^[^\.]+\.\Q$b\E$/);
+return 0;
+}
+
 # sync_dovecot_ssl_cert(&domain, [enable-or-disable])
 # If supported, configure Dovecot to use this domain's SSL cert for its IP
 sub sync_dovecot_ssl_cert
@@ -2562,8 +2579,6 @@ if (!$d->{'virt'}) {
 		}
 	else {
 		# May need to add or update
-		my $pdname = $d->{'dom'};
-		$pdname =~ s/^[^\.]+\.//;
 		foreach my $n (@dnames) {
 			my ($l) = grep { $_->{'value'} eq $n } @loc;
 			if ($l) {
@@ -2585,11 +2600,16 @@ if (!$d->{'virt'}) {
 						  'value' => $kvalue, },
 						],
 					  'file' => $cfile };
-				my ($plocal) = grep { $_->{'value'} eq $pdname } @loc;
+				my ($plocal) = grep {
+					&dovecot_local_name_cmp(
+						$n, $_->{'value'}) < 0
+					} @loc;
 				&dovecot::create_section($conf, $l, undef,
 							 $plocal);
 				push(@$conf, $l);
 				&flush_file_lines($l->{'file'}, undef, 1);
+				@loc = grep { $_->{'name'} eq 'local_name' &&
+					      $_->{'section'} } @$conf;
 				}
 			}
 		# Find old entries to remove
