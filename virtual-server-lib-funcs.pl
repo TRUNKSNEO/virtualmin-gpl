@@ -12791,31 +12791,31 @@ return undef;
 }
 
 # get_domain_user_quotas(&domain, ...)
-# For each virtual server, returns the home and mail directory usage for all its
+# For each virtual server, returns the home directory usage for all its
 # users (including the server admin), the server admin object, total usage for
 # all databases, and database usage that has already been included in the
 # home usage.
 sub get_domain_user_quotas
 {
-local ($duserrv);
-local $homequota = 0;
-local $dbquota = 0;
-local $dbquota_home = 0;
+my ($duserrv);
+my $homequota = 0;
+my $dbquota = 0;
+my $dbquota_home = 0;
 foreach my $d (@_) {
-	local @users = &list_domain_users($d, 0, 1, 0, 1);
-	local ($duser) = grep { $_->{'user'} eq $d->{'user'} } @users;
+	my @users = &list_domain_users($d, 0, 1, 0, 1);
+	my ($duser) = grep { $_->{'user'} eq $d->{'user'} } @users;
 	$duserrv ||= $duser;
-	local $u;
+	my $u;
 	foreach $u (@users) {
 		if (!$u->{'domainowner'} && !$u->{'webowner'}) {
 			$homequota += $u->{'uquota'};
 			}
 		}
-	local @dbq = &get_database_usage($d);
+	my @dbq = &get_database_usage($d);
 	$dbquota += $dbq[0];
 	$dbquota_home += $dbq[1];
 	}
-return ($homequota, undef, $duserrv, $dbquota, $dbquota_home);
+return ($homequota, $duserrv, $dbquota, $dbquota_home);
 }
 
 # get_domain_quota(&domain, [db-too])
@@ -12846,8 +12846,8 @@ if (&has_group_quotas()) {
 	}
 else {
 	# Fake it by summing up user quotas
-	local $dummy;
-	($home, undef, $dummy, $db, $dbq) = &get_domain_user_quotas(
+	my $dummy;
+	($home, $dummy, $db, $dbq) = &get_domain_user_quotas(
 				$d, &get_domain_by("parent", $d->{'id'}));
 	}
 return ($home >= $dbq ? $home-$dbq : $home, undef, $db);
@@ -12875,7 +12875,7 @@ if (&has_group_quotas()) {
 if (&has_home_quotas()) {
 	# Check domain owner user
 	my $bsize = &quota_bsize("home");
-	my ($homequota, undef, $duser, $dbquota, $dbquota_home) =
+	my ($homequota, $duser, $dbquota, $dbquota_home) =
 		&get_domain_user_quotas($d);
 	if ($d->{'uquota'} && $duser->{'uquota'} >= $d->{'uquota'}) {
 		return &text('setup_overuserquota',
@@ -18384,33 +18384,33 @@ delete @{$d}{@$deleted} if @$deleted;
 # Prints ui_table fields for quota usage in a domain
 sub show_domain_quota_usage
 {
-local ($d) = @_;
-local ($tcount, $total) = (0, 0);
+my ($d) = @_;
+my ($tcount, $total) = (0, 0);
 
 # Get usage for mail users and DBs in the domain
-local ($homequota, $mailquota, $duser, $dbquota, $dbquota_home) =
+my ($homequota, $duser, $dbquota, $dbquota_home) =
 	&get_domain_user_quotas($d);
 
 # Get usage for sub-domain mail users
-local @subs = &get_domain_by("parent", $d->{'id'});
-local ($subhomequota, $submailquota, $dummy, $subdbquota, $subdbquota_home) =
+my @subs = &get_domain_by("parent", $d->{'id'});
+my ($subhomequota, $dummy, $subdbquota, $subdbquota_home) =
 	&get_domain_user_quotas(@subs);
 
 # Get group usage for the domain
-local ($totalhomequota, $totalmailquota) = &get_domain_quota($d);
-local $bsize = &quota_bsize("home");
+my ($totalhomequota, $totalmailquota) = &get_domain_quota($d);
+my $bsize = &quota_bsize("home");
 $totalhomequota -= $dbquota_home/$bsize;
 
 # Show home directory file usage, for total, unix user and mail users
-local $tmsg = &nice_size($totalhomequota*$bsize);
+my $tmsg = &nice_size($totalhomequota*$bsize);
 if ($d->{'quota'} && $totalhomequota > $d->{'quota'}) {
 	$tmsg = "<font color=#ff0000><b>$tmsg</b></font>";
 	}
-local $umsg = &nice_size($duser->{'uquota'}*$bsize);
+my $umsg = &nice_size($duser->{'uquota'}*$bsize);
 if ($d->{'uquota'} && $duser->{'uquota'} > $d->{'uquota'}) {
 	$umsg = "<font color=#ff0000><b>$umsg</b></font>";
 	}
-local $mmsg = &nice_size(($homequota+$subhomequota)*$bsize);
+my $mmsg = &nice_size(($homequota+$subhomequota)*$bsize);
 print &ui_table_row($text{'edit_allquotah'},
 		    &text('edit_quotaby', $tmsg, $umsg, $mmsg), 3);
 $tcount++;
