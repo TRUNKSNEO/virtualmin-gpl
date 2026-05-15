@@ -565,6 +565,7 @@ setup_usergroups=Adding administration user to groups ..
 setup_eusergroups=.. failed : $1
 setup_home=Creating home directory ..
 setup_web=Adding new virtual website ..
+setup_webclash=.. an Apache virtual host for $1 on port $2 already exists!
 setup_webuser=Adding webserver user $1 to server's group ..
 setup_webalias=Updating origin virtual server ..
 setup_ewebalias=.. failed to find origin virtual server

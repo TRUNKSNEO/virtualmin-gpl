@@ -149,7 +149,12 @@ if ($d->{'ip6'}) {
 
 # Find directives in the non-SSL virtualhost, for copying
 &$first_print($text{'setup_ssl'});
-local ($virt, $vconf) = &get_apache_virtual($d->{'dom'},
+my $already = &get_apache_virtual($d->{'dom'}, $web_sslport);
+if ($already) {
+	&$second_print(&text('setup_webclash', $d->{'dom'}, $web_sslport));
+	return 0;
+	}
+my ($virt, $vconf) = &get_apache_virtual($d->{'dom'},
 					    $d->{'web_port'});
 if (!$virt) {
 	&$second_print($text{'setup_esslcopy'});

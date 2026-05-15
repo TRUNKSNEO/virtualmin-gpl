@@ -35,6 +35,11 @@ if ($d->{'alias'}) {
 else {
 	&$first_print($text{'setup_web'});
 	$lockdom = $d;
+	my $already = &get_apache_virtual($d->{'dom'}, $web_port);
+	if ($already) {
+		&$second_print(&text('setup_webclash', $d->{'dom'}, $web_port));
+		return 0;
+		}
 	}
 &require_apache();
 &obtain_lock_web($lockdom);
