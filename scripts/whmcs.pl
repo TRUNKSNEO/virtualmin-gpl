@@ -24,7 +24,7 @@ return "WHMCS is an all-in-one client management, billing & support solution for
 # script_whmcs_versions()
 sub script_whmcs_versions
 {
-return ( "9.0.3", "8.13.2" );
+return ( "9.0.4", "8.13.3" );
 }
 
 sub script_whmcs_version_desc
