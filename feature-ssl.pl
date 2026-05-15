@@ -2408,21 +2408,24 @@ else {
 	}
 }
 
-# dovecot_local_name_cmp(name1, name2)
+# dovecot_local_name_cmp(name1, name2, dovecot-version)
 # Returns -1 if name1 should be before name2 for Dovecot SNI matching,
 # 1 if it should be after, or 0 if their relative order does not matter.
 sub dovecot_local_name_cmp
 {
-my ($a, $b) = @_;
+my ($a, $b, $ver) = @_;
 $a = lc($a);
 $b = lc($b);
 $a =~ s/\.$//;
 $b =~ s/\.$//;
 my $aw = $a =~ s/^\*\.// ? 1 : 0;
 my $bw = $b =~ s/^\*\.// ? 1 : 0;
-return -1 if ($aw && !$bw && $b =~ /^[^\.]+\.\Q$a\E$/);
-return 1 if ($bw && !$aw && $a =~ /^[^\.]+\.\Q$b\E$/);
-return 0;
+my $rv = $aw && !$bw && $b =~ /^[^\.]+\.\Q$a\E$/ ? -1 :
+	 $bw && !$aw && $a =~ /^[^\.]+\.\Q$b\E$/ ? 1 : 0;
+if (&compare_versions($ver, "2.3") < 0) {
+	$rv = -$rv;
+	}
+return $rv;
 }
 
 # sync_dovecot_ssl_cert(&domain, [enable-or-disable])
@@ -2607,7 +2610,7 @@ if (!$d->{'virt'}) {
 					  'file' => $cfile };
 				my ($plocal) = grep {
 					&dovecot_local_name_cmp(
-						$n, $_->{'value'}) < 0
+						$n, $_->{'value'}, $ver) < 0
 					} @loc;
 				&dovecot::create_section($conf, $l, undef,
 							 $plocal);
