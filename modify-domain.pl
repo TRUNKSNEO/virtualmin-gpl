@@ -381,7 +381,7 @@ elsif (!$dom->{'virt'} && $ip eq "allocate") {
 		}
 	else {
 		# Allocating from template's ranges
-		$tmpl->{'ranges'} eq "none" && &usage("The --allocate-ip option cannot be used unless automatic IP allocation is enabled - use --ip instead");
+		$tmpl->{'ranges'} eq "none" && &usage("The --allocate-ip option cannot be used unless automatic IP allocation is configured in templates - use --ip instead");
 		($ip, $netmask) = &free_ip_address($tmpl);
 		$ip || &usage("Failed to allocate IP address from ranges!");
 		}
@@ -407,7 +407,7 @@ if ($dom->{'virt6'} && $ip6 eq "allocate") {
 	&usage("An IPv6 address cannot be allocated when one is already active");
 	}
 elsif (!$dom->{'virt6'} && $ip6 eq "allocate") {
-	$tmpl->{'ranges6'} eq "none" && &usage("The --allocate-ip6 option cannot be used unless automatic IP allocation is enabled - use --ip6 instead");
+	$tmpl->{'ranges6'} eq "none" && &usage("The --allocate-ip6 option cannot be used unless automatic IP allocation is configured in templates - use --ip6 instead");
 	($ip6, $netmask6) = &free_ip6_address($tmpl);
 	$ip6 || &usage("Failed to allocate IPv6 address from ranges!");
 	}

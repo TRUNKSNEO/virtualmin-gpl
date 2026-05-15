@@ -537,14 +537,14 @@ if ($ip eq "allocate") {
 		}
 	else {
 		# Allocating from template
-		$tmpl->{'ranges'} ne "none" || &usage("The --allocate-ip option cannot be used unless automatic IP allocation is enabled - use --ip instead");
+		$tmpl->{'ranges'} ne "none" || &usage("The --allocate-ip option cannot be used unless automatic IP allocation is configured in templates - use --ip instead");
 		($ip, $netmask) = &free_ip_address($tmpl);
 		$ip || &usage("Failed to allocate IP address from ranges!");
 		}
 	}
 elsif ($virt) {
 	# Make sure manual IP specification is allowed
-	$tmpl->{'ranges'} eq "none" || &usage("The --ip option cannot be used when automatic IP allocation is enabled - use --allocate-ip instead");
+	$tmpl->{'ranges'} eq "none" || &usage("The --ip option cannot be used when automatic IP allocation is configured in templates - use --allocate-ip instead");
 	}
 
 if ($ip6 eq "allocate") {
