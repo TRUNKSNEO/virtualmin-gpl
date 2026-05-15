@@ -14,7 +14,6 @@ if ($ARGV[0] eq "--debug") {
 
 # For each server, first find its total usage
 $homesize = &quota_bsize("home");
-$mailsize = &quota_bsize("mail");
 $now = time();
 &read_file($user_quota_warnings_file, \%userwarnings);
 foreach $d (&list_domains()) {
@@ -23,9 +22,8 @@ foreach $d (&list_domains()) {
 
 	if ($d->{'quota'} && !$d->{'parent'}) {
 		# Get usage for this server and all sub-servers
-		($homequota, $mailquota, $dbquota) = &get_domain_quota($d, 1);
+		($homequota, $dbquota) = &get_domain_quota($d, 1);
 		$usage = $homequota*$homesize +
-			 $mailquota*$mailsize +
 			 $dbquota;
 
 		# Compare to server's limit

@@ -67,7 +67,7 @@ if (&has_home_quotas()) {
 			local ($home, $mail, $dbusage, $quota);
 			if ($config{'show_uquotas'} == 0) {
 				# Domain group quotas
-				($home, $mail, $dbusage) =
+				($home, $dbusage) =
 					&get_domain_quota($d, 1);
 				$quota = $d->{'quota'};
 				}

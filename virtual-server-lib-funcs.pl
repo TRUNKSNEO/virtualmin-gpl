@@ -3685,9 +3685,8 @@ foreach my $d (&sort_indent_domains($doms)) {
 				# Show total usage for domain
 				my $qmax = $d->{'quota'} ?
 				    $d->{'quota'}*&quota_bsize("home") : undef;
-				my ($hq, $mq, $dbq) = &get_domain_quota($d, 1);
-				my $ut = $hq*&quota_bsize("home") +
-					 $mq*&quota_bsize("mail") + $dbq;
+				my ($hq, $dbq) = &get_domain_quota($d, 1);
+				my $ut = $hq*&quota_bsize("home") + $dbq;
 				local $txt = &nice_size($ut);
 				if ($qmax && $bytes > $qmax) {
 					$txt ="<font color=#ff0000>$txt</font>";
@@ -12825,8 +12824,8 @@ return ($homequota, $duserrv, $dbquota, $dbquota_home);
 # in the group quota for home, it is subtracted. All quotas are in blocks.
 sub get_domain_quota
 {
-local ($d, $dbtoo) = @_;
-local ($home, $db, $dbq);
+my ($d, $dbtoo) = @_;
+my ($home, $db, $dbq);
 if (&has_group_quotas()) {
 	# Query actual group quotas
 	my @groups = &list_all_groups_quotas(0);
@@ -12850,7 +12849,7 @@ else {
 	($home, $dummy, $db, $dbq) = &get_domain_user_quotas(
 				$d, &get_domain_by("parent", $d->{'id'}));
 	}
-return ($home >= $dbq ? $home-$dbq : $home, undef, $db);
+return ($home >= $dbq ? $home-$dbq : $home, $db);
 }
 
 # check_domain_over_quota(&domain)
@@ -18397,7 +18396,7 @@ my ($subhomequota, $dummy, $subdbquota, $subdbquota_home) =
 	&get_domain_user_quotas(@subs);
 
 # Get group usage for the domain
-my ($totalhomequota, $totalmailquota) = &get_domain_quota($d);
+my ($totalhomequota) = &get_domain_quota($d);
 my $bsize = &quota_bsize("home");
 $totalhomequota -= $dbquota_home/$bsize;
 

@@ -273,7 +273,7 @@ if ($limits_section) {
 		$overlimits++;
 		}
 	if ($d->{'quota'} && 0) {
-		($totalhomequota, $totalmailquota) = &get_domain_quota($d);
+		($totalhomequota) = &get_domain_quota($d);
 		if ($totalhomequota > $d->{'quota'}) {
 			$overlimits++;
 			}

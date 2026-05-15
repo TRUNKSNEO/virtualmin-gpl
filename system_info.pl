@@ -225,9 +225,8 @@ if (!&master_admin() && !&reseller_admin()) {
 	if (!$data->{'noquotas'} &&
             virtual_server::has_home_quotas()) {
                 my $homesize = virtual_server::quota_bsize("home");
-                my $mailsize = virtual_server::quota_bsize("mail");
-                my ($home, $mail, $db) = &get_domain_quota($d, 1);
-                my $usage = $home*$homesize + $mail*$mailsize + $db;
+                my ($home, $db) = &get_domain_quota($d, 1);
+                my $usage = $home*$homesize + $db;
                 my $limit = $d->{'quota'}*$homesize;
                 if ($limit) {
 			if ($usage > $limit) {

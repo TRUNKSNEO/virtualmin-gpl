@@ -473,11 +473,11 @@ if ($multiline) {
 			print "    Server block quota: ",
 			      ($d->{'quota'} || "Unlimited"),"\n";
 			if ($multiline == 1) {
-				($qhome, $qmail) = &get_domain_quota($d);
+				($qhome) = &get_domain_quota($d);
 				print "    Server quota used: ",
 				      &nice_size($qhome*$hs),"\n";
 				print "    Server block quota used: ",
-				      ($qhome + $qmail),"\n";
+				      ($qhome),"\n";
 				print "    Server byte quota used: ",
 				      ($qhome*$hs),"\n";
 				}

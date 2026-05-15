@@ -79,7 +79,7 @@ if (&has_home_quotas()) {
 			    &quota_show($d->{'quota'}));
 
 	# Quota used
-	($home, undef, $db) = &get_domain_quota($d, 1);
+	($home, $db) = &get_domain_quota($d, 1);
 	$usage = $home*$homesize;
 	print &ui_table_row($text{'usage_susage'},
 			    &nice_size($usage));
